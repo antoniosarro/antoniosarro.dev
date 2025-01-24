@@ -1,0 +1,22 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+html {
+    @apply scroll-smooth antialiased;
+}
+
+body {
+    background-image: url("noise.png");
+    background-size: 150px 150px;
+    background-position: 0 0;
+    background-color: #171212;
+    color: #eed1c7;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--incognito), "Inter", sans-serif;
+}
