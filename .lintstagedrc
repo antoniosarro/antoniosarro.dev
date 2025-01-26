@@ -1,0 +1,4 @@
+{
+	"*.{html,css,ts,svelte}": ["prettier --write ."],
+	"*.{ts,svelte}": ["eslint ."]
+}

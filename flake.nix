@@ -17,8 +17,8 @@
       default = pkgs.mkShell {
         shellHook = ''
             echo "🚀 Welcome to Node development environment"
-	        echo "Node version: $(node -v)"
-	        echo "Pnpm version: $(pnpm -v)"
+	          echo "Node version: $(node -v)"
+	          echo "Pnpm version: $(pnpm -v)"
         '';
         packages = with pkgs; [
           # Node

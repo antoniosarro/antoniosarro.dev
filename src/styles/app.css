@@ -1,22 +1,42 @@
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
+@import url(./fonts.css);
+
+@layer base {
+	:root {
+		--background: #ede8e8;
+		--text: #2b0305;
+		--primary: #81090d;
+		--secondary: #f5c270;
+		--accent: #6a3624;
+		--elevation-one: #bbb7b7;
+	}
+
+	[data-theme='dark'] {
+		--background: #171212;
+		--text: #fcd4d6;
+		--primary: #f67e82;
+		--secondary: #8f5c0a;
+		--accent: #dba695;
+		--elevation-one: #372d2d;
+	}
+}
 
 html {
-    @apply scroll-smooth antialiased;
+	@apply scroll-smooth antialiased;
 }
 
 body {
-    background-image: url("noise.png");
-    background-size: 150px 150px;
-    background-position: 0 0;
-    background-color: #171212;
-    color: #eed1c7;
+	background-image: url('noise.png');
+	background-size: 150px 150px;
+	background-position: 0 0;
+	@apply bg-background text-text;
 }
 
 h1,
 h2,
 h3,
 h4 {
-  font-family: var(--incognito), "Inter", sans-serif;
+	font-family: var(--incognito), 'Inter', sans-serif;
 }
