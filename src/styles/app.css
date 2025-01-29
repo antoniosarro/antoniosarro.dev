@@ -31,7 +31,7 @@ body {
 	background-image: url('noise.png');
 	background-size: 150px 150px;
 	background-position: 0 0;
-	@apply bg-background text-text;
+	@apply bg-background font-inter text-text;
 }
 
 h1,
