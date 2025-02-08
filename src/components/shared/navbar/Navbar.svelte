@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { routes } from '$data/routes';
+
 	import Logo from './Logo.svelte';
 	import Mobile from './Mobile.svelte';
 	import Theme from './Theme.svelte';
 </script>
 
-<header class="md-10 z-30 border-b border-elevation-one p-6 text-sm md:mb-28 md:px-16">
-	<div class="mx-auto flex max-w-6xl items-center justify-between">
-		<a href="/" aria-label="Logo" class="fill-text">
+<header class="z-30 mb-10 text-sm">
+	<div class="mx-auto flex items-center justify-between">
+		<a href="/" aria-label="logo" class="fill-text">
 			<Logo />
 		</a>
 
@@ -25,6 +26,7 @@
 				{/each}
 			</ul>
 		</nav>
+
 		<div class="flex items-center gap-x-4">
 			<Theme />
 			<Mobile />

@@ -1,8 +1,10 @@
 export type Social = {
 	name: string;
-	url: string;
+	url?: string;
 	icon: string;
 };
+
+export const mail: string = 'mailto:contact@antoniosarro.dev';
 
 export const socials: Social[] = [
 	{
@@ -24,5 +26,15 @@ export const socials: Social[] = [
 		name: 'Discord',
 		url: 'https://discord.com/users/297744171341709312',
 		icon: 'ic:baseline-discord'
+	},
+	{
+		name: 'Matrix',
+		url: 'https://matrix.to/#/@antoniosarro:matrix.org',
+		icon: 'cib:matrix'
+	},
+	{
+		name: 'Mail',
+		url: mail,
+		icon: 'material-symbols:mail-rounded'
 	}
 ];

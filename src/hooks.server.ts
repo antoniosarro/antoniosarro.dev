@@ -1,6 +1,7 @@
 import type { Handle } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
-import { THEMES, type Theme } from '$lib/constants/theme';
+
+import { type Theme, THEMES } from '$lib/constants/theme';
 
 function isValidTheme(theme: string): theme is Theme {
 	return Object.values(THEMES).includes(theme as Theme);

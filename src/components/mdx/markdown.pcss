@@ -1,0 +1,63 @@
+/* General Styling */
+
+.mdsvex {
+	p {
+		@apply mb-4;
+	}
+
+	code:not(code[data-language]) {
+		@apply rounded-md bg-elevation-one px-1 py-[0.15rem] font-incognito font-medium text-primary;
+	}
+}
+
+/* Code Block */
+
+[data-rehype-pretty-code-figure] {
+	@apply relative;
+
+	& pre {
+		@apply flex max-h-96 flex-col overflow-x-auto py-4 text-base;
+	}
+
+	& code {
+		@apply grid min-w-full break-words rounded-none border-0 bg-transparent p-0;
+		counter-reset: line;
+		box-decoration-break: clone;
+	}
+
+	& [data-line] {
+		@apply inline-block w-full basis-4 border-l-[3px] border-l-transparent py-0.5 pl-2 pr-5;
+	}
+
+	& [data-highlighted-line] {
+		@apply border-l-primary bg-primary/[0.1];
+	}
+
+	& [data-highlighted-line][data-highlighted-line-id='add'] {
+		@apply border-l-green-600 !text-black data-[highlighted-line-id="add"]:bg-green-200/80;
+	}
+
+	& [data-highlighted-line][data-highlighted-line-id='remove'] {
+		@apply border-l-red-600 !text-black data-[highlighted-line-id="remove"]:bg-red-200/80;
+	}
+}
+
+[data-chars-id='ob'] {
+	@apply rounded border border-primary bg-background p-[2px] font-bold text-text !important;
+}
+
+/* line number */
+[data-rehype-pretty-code-figure] [data-line-numbers] > [data-line]::before {
+	counter-increment: line;
+	content: counter(line);
+	width: 1rem;
+	margin-right: 1rem;
+	text-align: right;
+}
+
+.mdsvex code:not(pre code) {
+	white-space: pre-wrap;
+	word-break: break-all;
+	overflow-wrap: break-word;
+	@apply rounded-md bg-green-500;
+}

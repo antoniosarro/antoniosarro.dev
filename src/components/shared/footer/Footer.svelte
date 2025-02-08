@@ -1,14 +1,18 @@
 <script lang="ts">
-	import { footerTechStack } from '$data/techs';
 	import 'iconify-icon';
+
+	import { footerTechStack } from '$data/techs';
 </script>
 
-<footer class="relative mt-44 min-h-full border-t border-elevation-one lg:min-h-[250px]">
+<footer class="relative min-h-full">
 	<div
-		class="mx-auto flex max-w-7xl flex-col items-center justify-center gap-y-3 px-6 py-16 md:px-16 lg:flex-row lg:justify-between"
+		class="mx-auto flex max-w-7xl flex-col items-center justify-center gap-y-3 lg:flex-row lg:justify-between"
 	>
 		<div class="flex flex-col items-center gap-y-3">
-			<h3 class="font-inter">Made with pain, love and:</h3>
+			<h3 class="font-inter">
+				Made with <span class="font-bold text-primary">pain</span> &
+				<span class="font-bold text-primary">love</span> using:
+			</h3>
 			<ul class="flex items-center gap-x-6 text-sm text-zinc-400 md:mt-0 dark:text-zinc-600">
 				{#each footerTechStack as { href, icon, label, name }}
 					<li>
@@ -19,7 +23,7 @@
 							target="_blank"
 							aria-label={label}
 						>
-							<iconify-icon height="20" width="20" class="flex" {icon}></iconify-icon>
+							<iconify-icon noobserver height="20" width="20" class="flex" {icon}></iconify-icon>
 							{name}
 						</a>
 					</li>

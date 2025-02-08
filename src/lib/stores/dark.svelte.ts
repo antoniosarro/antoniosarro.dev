@@ -1,6 +1,7 @@
-import { get, writable } from 'svelte/store';
 import type { Writable } from 'svelte/store';
-import { THEMES, COOKIE_CONFIG, BODY_ATTRIBUTE } from '$lib/constants/theme';
+import { get, writable } from 'svelte/store';
+
+import { BODY_ATTRIBUTE, COOKIE_CONFIG, THEMES } from '$lib/constants/theme';
 
 export const darkMode: Writable<boolean | null> = writable(null);
 

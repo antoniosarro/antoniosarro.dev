@@ -1,7 +1,7 @@
 <script lang="ts">
 	import 'iconify-icon';
-	import { darkMode, initDarkMode, toggleDarkMode } from '$lib/stores/dark.svelte';
 
+	import { darkMode, initDarkMode, toggleDarkMode } from '$lib/stores/dark.svelte';
 	$effect(() => {
 		initDarkMode();
 	});
@@ -12,7 +12,7 @@
 		? '-rotate-180'
 		: 'rotate-0'}"
 	onclick={toggleDarkMode}
-	aria-label="Toggle Theme"
+	aria-label="toggle theme"
 >
 	{#if $darkMode}
 		<iconify-icon noobserver height="22" width="22" class="flex" icon="hugeicons:moon-01"

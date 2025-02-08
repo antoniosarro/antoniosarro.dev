@@ -80,21 +80,5 @@ export const routes: Route[] = [
 			creator: '@_antoniosarro_',
 			handle: '@_antoniosarro_'
 		}
-	},
-	{
-		title: 'Tools',
-		path: '/tools',
-		show: true,
-		description: 'Collection of tools and software that I use daily',
-		image: '',
-		icon: 'entypo:tools',
-		url: 'https://antoniosarro.dev/tools',
-		twitter: {
-			image: '',
-			imageAlt: 'Tools',
-			site: '@_antoniosarro_',
-			creator: '@_antoniosarro_',
-			handle: '@_antoniosarro_'
-		}
 	}
 ];

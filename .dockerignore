@@ -1,0 +1,44 @@
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Development configs
+.vscode
+.editorconfig
+.eslintrc.cjs
+.prettierrc
+.prettierignore
+.graphqlrc
+.npmrc
+.husky
+.commitlintrc
+.lintstagedrc
+eslint.config.js
+
+# Docker files
+Dockerfile*
+.dockerignore
+
+# Build outputs and dependencies
+node_modules/
+build/
+.svelte-kit/
+package/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Documentation
+README.md
+docs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# NixOS
+flake.lock
+flake.nix

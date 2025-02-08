@@ -16,13 +16,17 @@
 			opacity = 0;
 		}, 500);
 	}
+
+	function handleMouseDown() {
+		scale = 1.5;
+	}
+
+	function handleMouseUp() {
+		scale = 1;
+	}
 </script>
 
-<svelte:window
-	onmousemove={onMouseMove}
-	on:mousedown={() => (scale = 1.5)}
-	on:mouseup={() => (scale = 1)}
-/>
+<svelte:window onmousemove={onMouseMove} onmousedown={handleMouseDown} onmouseup={handleMouseUp} />
 
 <div
 	class="cursor-ring pointer-events-none fixed left-0 top-0 z-30 h-7 w-7 rounded-full border border-primary opacity-0"

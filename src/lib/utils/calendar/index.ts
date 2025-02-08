@@ -1,7 +1,7 @@
 // Import necessary utilities and types
 import { DEFAULT_MONTH_LABELS } from '$lib/constants/calendar';
 import type { DayIndex, MonthLabel, Week } from '$types/calendar';
-import type { Contribution } from '$types/github';
+import type { Contribution } from '$types/contributions';
 import {
 	differenceInCalendarDays,
 	getDayOfWeek,

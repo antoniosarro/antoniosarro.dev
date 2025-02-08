@@ -1,6 +1,7 @@
 <script lang="ts">
+	import type { Result } from '$types/contributions';
 	import { getGitHubYears } from '$utils/date';
-	import type { Result } from '$types/github';
+
 	import Calendar from './components/Calendar.svelte';
 
 	let years = getGitHubYears(2024);
@@ -24,7 +25,7 @@
 			<button
 				class="rounded-lg border px-4 py-2 text-center text-sm font-medium duration-300 {year ===
 				selectedYear
-					? 'text border-transparent bg-primary text-black'
+					? 'text border-transparent bg-primary text-background'
 					: 'border-elevation-one hover:border-primary'}"
 				onclick={() => (selectedYear = year)}
 				title={`View Graph for the year ${year}`}

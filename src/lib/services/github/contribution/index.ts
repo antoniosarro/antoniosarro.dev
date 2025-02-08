@@ -1,7 +1,8 @@
 // Import necessary types and utilities
-import type { Contribution, Level, Result } from '$types/github';
-import { getDayOfYear, getGitHubYears } from '$utils/date';
 import { parseHTML } from 'linkedom';
+
+import type { Contribution, Level, Result } from '$types/contributions';
+import { getDayOfYear, getGitHubYears } from '$utils/date';
 
 /**
  * Fetches GitHub contributions for the specified user across multiple years.

@@ -1,5 +1,10 @@
 <script lang="ts">
 	import 'iconify-icon';
+
+	import { routes } from '$data/routes';
+
+	import Logo from './Logo.svelte';
+
 	let show = $state(false);
 
 	function onToggleNav() {
@@ -10,8 +15,6 @@
 		}
 		show = !show;
 	}
-	import { routes } from '$data/routes';
-	import Logo from './Logo.svelte';
 </script>
 
 <button
@@ -49,6 +52,7 @@
 					class="group flex items-center gap-x-2 p-6 font-incognito text-lg font-semibold shadow-line"
 					aria-label={title}
 					href={path}
+					onclick={() => onToggleNav()}
 				>
 					<iconify-icon noobserver height="20" width="20" class="flex" {icon}></iconify-icon>
 					{title}

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import profile from '$lib/assets/profile.png';
+	import profile from '$lib/assets/profile.avif';
 
 	let zoom = $state(false);
 	let rotationX = $state(0);

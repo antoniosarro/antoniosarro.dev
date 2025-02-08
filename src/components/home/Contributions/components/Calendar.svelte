@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { DEFAULT_LABELS } from '$lib/constants/calendar';
 	import { darkMode } from '$lib/stores/dark.svelte';
-	import type { Result } from '$types/github';
+	import type { Result } from '$types/contributions';
 	import { getDimensions, getMonthLabels, groupByWeeks } from '$utils/calendar';
 	import { range } from '$utils/generic';
 

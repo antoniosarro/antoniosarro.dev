@@ -1,3 +1,5 @@
+import type { Contribution } from '$types/contributions';
+
 /**
  * Calculates the age of a person based on their birth date.
  *
@@ -209,4 +211,34 @@ export function differenceInCalendarDays(date1: Date, date2: Date): number {
  */
 export function getMonth(date: Date): number {
 	return date.getMonth();
+}
+
+export function formatDate(date: string) {
+	return new Date(date).toLocaleDateString('en-US', {
+		month: 'short',
+		year: 'numeric'
+	});
+}
+
+export function formatDateFull(date: string) {
+	return new Date(date).toLocaleDateString('en-US', {
+		month: 'short',
+		year: 'numeric',
+		day: 'numeric'
+	});
+}
+
+export function generateMockYearlyDates(year: number): Contribution[] {
+	const dates: Contribution[] = [];
+	for (let month = 1; month <= 12; month++) {
+		const daysInMonth = new Date(year, month, 0).getDate();
+		for (let day = 1; day <= daysInMonth; day++) {
+			dates.push({
+				date: `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`,
+				count: 0,
+				level: 0
+			});
+		}
+	}
+	return dates;
 }
