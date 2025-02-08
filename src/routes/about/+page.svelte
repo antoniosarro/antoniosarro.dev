@@ -7,8 +7,8 @@
 	import { hardSkills } from '$data/hardSkills';
 	import { mail } from '$data/socials';
 	import { softSkills } from '$data/softskills';
-	import resume from '$lib/assets/Antonio_Sarro_CV.pdf';
-	import profile from '$lib/assets/profile.png';
+	import resume from '$lib/assets/cv/Antonio_Sarro_CV.pdf';
+	import profile from '$lib/assets/images/profile.webp';
 	import { calculateAge, formatDate } from '$utils/date';
 
 	function downloadResume(url: string) {
@@ -115,7 +115,13 @@
 					class="relative grid min-h-[80px] min-w-[80px] place-items-center overflow-clip rounded-md border border-elevation-one fill-text p-2"
 				>
 					{#if logo}
-						<img src={logo} alt="{company} logo" class="object-cover" width={50} height={50} />
+						<img
+							src="/experiences/{logo}.webp"
+							alt="{company} logo"
+							class="object-cover"
+							width={50}
+							height={50}
+						/>
 					{:else}
 						<Logo />
 					{/if}

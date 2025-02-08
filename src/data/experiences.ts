@@ -25,7 +25,7 @@ export const experiences: Experience[] = [
 			'Deployed and scaled microservices on AWS using S3 and ECS',
 			'Gained expertise in Agile methodologies, teamwork, and customer communication'
 		],
-		logo: 'https://www.ibimi.it/wp-content/uploads/2022/03/acca.jpg'
+		logo: 'acca'
 	},
 	{
 		position: 'Fullstack Developer',
@@ -44,6 +44,6 @@ export const experiences: Experience[] = [
 			'Implemented in-app purchases and advertising through Google Pay and AdMob',
 			'Gained experience in teamwork, task management, deadline adherence, and collaborative problem-solving'
 		],
-		logo: 'https://www.shutterstock.com/image-vector/game-logo-design-template-stick-600nw-1041729025.jpg'
+		logo: 'evolution_studio'
 	}
 ];

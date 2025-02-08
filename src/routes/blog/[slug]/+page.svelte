@@ -4,7 +4,8 @@
 	import Giscus from '@giscus/svelte';
 
 	import { BuyMeCoffee, Metadata, ShareArticle } from '$components/shared/misc';
-	import profile from '$lib/assets/profile.avif';
+	import { env } from '$env/dynamic/public';
+	import profile from '$lib/assets/images/profile.webp';
 	import { darkMode } from '$lib/stores/dark.svelte';
 	import { formatDateFull } from '$lib/utils/date';
 
@@ -105,9 +106,9 @@
 			<Giscus
 				id="comments"
 				repo="antoniosarro/antoniosarro.dev"
-				repoId="R_kgDONiJZrw"
+				repoId={env.PUBLIC_GISCUS_REPO_ID}
 				category="Announcements"
-				categoryId="DIC_kwDONiJZr84CmsoC"
+				categoryId={env.PUBLIC_GISCUS_CATEGORY_ID}
 				mapping="title"
 				reactionsEnabled="1"
 				emitMetadata="0"

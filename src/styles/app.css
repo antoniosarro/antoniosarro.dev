@@ -28,7 +28,7 @@ html {
 }
 
 body {
-	background-image: url('$lib/assets/noise.png');
+	background-image: url('$lib/assets/images/noise.png');
 	background-size: 150px 150px;
 	background-position: 0 0;
 	@apply bg-background font-inter text-text;

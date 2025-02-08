@@ -8,6 +8,7 @@
 	import { BROWSER } from 'esm-env';
 	import { onDestroy, onMount } from 'svelte';
 
+	import { dev } from '$app/environment';
 	import type { UmamiTrackerConfiguration, WindowWithUmami } from '$types/umami';
 
 	/** The unique ID of the website */
@@ -52,7 +53,7 @@
 </script>
 
 <svelte:head>
-	{#if shouldInitialize}
+	{#if shouldInitialize && !dev}
 		<script
 			async
 			defer
