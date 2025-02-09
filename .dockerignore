@@ -42,3 +42,7 @@ Thumbs.db
 # NixOS
 flake.lock
 flake.nix
+
+# Utils
+build.sh
+copy.sh
