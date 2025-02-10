@@ -4,7 +4,7 @@
 	import { socials } from '$data/socials';
 </script>
 
-<ul class="flex flex-wrap items-center gap-x-5 gap-y-4">
+<ul class="my-8 flex flex-wrap items-center gap-x-5 gap-y-4">
 	{#each socials as { icon, name, url }}
 		<li>
 			{#if url}

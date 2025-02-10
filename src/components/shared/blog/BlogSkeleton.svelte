@@ -1,8 +1,8 @@
 <div
-	class="group flex animate-pulse flex-col items-start gap-4 rounded-lg border border-elevation-one px-6 pb-2 pt-6"
+	class="group flex animate-pulse flex-col items-start gap-4 rounded-lg border border-elevation-one p-6 lg:flex-row lg:items-center"
 >
-	<div class="h-56 w-full">
-		<div class="h-56 w-full rounded-md bg-elevation-one"></div>
+	<div class="h-56 w-full lg:h-52 lg:w-[450px]">
+		<div class="h-56 w-full rounded-md bg-elevation-one lg:h-52 lg:w-[450px]"></div>
 	</div>
 	<div class="w-full">
 		<div class="mb-4 h-5 w-full rounded-full bg-elevation-one"></div>

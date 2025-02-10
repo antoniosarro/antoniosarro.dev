@@ -19,7 +19,7 @@
 	}
 </script>
 
-<div class="profile-container z-10 hidden lg:block">
+<div class="profile-container z-10 hidden xl:block">
 	<img
 		onmousemove={onMouseEnter}
 		onmouseleave={onMouseLeave}

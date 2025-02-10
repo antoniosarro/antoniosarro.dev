@@ -18,7 +18,7 @@
 				.filter((project) => {
 					return project.contributor === false;
 				})
-				.slice(0, 2);
+				.slice(0, 3);
 		} else {
 			return projects.filter((project) => {
 				return (
@@ -30,7 +30,7 @@
 </script>
 
 <section id="projects">
-	<div class="flex flex-col gap-4">
+	<div class="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
 		{#if !loading}
 			{#each filtered as project}
 				{#if project}

@@ -9,11 +9,11 @@
 
 <a
 	href="/blog/{article.slug}"
-	class="group flex flex-col items-start gap-4 rounded-lg border border-elevation-one px-6 pb-2 pt-6"
+	class="group flex flex-col items-start gap-4 rounded-lg border border-elevation-one p-6 lg:flex-row lg:items-center"
 >
-	<div class="relative w-full overflow-clip">
+	<div class="relative w-full overflow-clip sm:h-56 lg:h-52 lg:w-[450px]">
 		<img
-			class="h-full w-full rounded-md object-cover duration-300 group-hover:scale-125"
+			class="rounded-md object-cover duration-300 group-hover:scale-125"
 			src={article.frontmatter.image}
 			alt={article.frontmatter.title}
 		/>

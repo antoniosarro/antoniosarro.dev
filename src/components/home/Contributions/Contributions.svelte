@@ -17,7 +17,7 @@
 </script>
 
 <div class="flex flex-col gap-4 xl:flex-row">
-	<div class="max-h-fit max-w-fit rounded-lg border border-elevation-one p-4">
+	<div class="max-h-fit max-w-fit rounded-lg border border-elevation-one p-4 md:p-6 lg:p-8">
 		<Calendar data={github[selectedYear]} year={selectedYear} />
 	</div>
 	<div class="flex flex-row flex-wrap justify-start gap-2 xl:flex-col">

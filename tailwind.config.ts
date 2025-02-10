@@ -20,6 +20,9 @@ export default {
 			},
 			boxShadow: {
 				line: 'var(--elevation-one) 0px 1px 0px'
+			},
+			gridTemplateColumns: {
+				custom: '1.2fr 1fr'
 			}
 		}
 	},

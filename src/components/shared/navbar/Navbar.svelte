@@ -6,12 +6,11 @@
 	import Theme from './Theme.svelte';
 </script>
 
-<header class="z-30 mb-10 text-sm">
-	<div class="mx-auto flex items-center justify-between">
+<header class="z-30 mb-10 border-b border-elevation-one px-6 py-6 text-sm md:mb-28 md:px-16">
+	<div class="mx-auto flex max-w-6xl items-center justify-between">
 		<a href="/" aria-label="logo" class="fill-text">
 			<Logo />
 		</a>
-
 		<nav class="hidden md:block">
 			<ul class="flex items-center gap-x-8">
 				{#each routes as { title, path, show }}
@@ -26,7 +25,6 @@
 				{/each}
 			</ul>
 		</nav>
-
 		<div class="flex items-center gap-x-4">
 			<Theme />
 			<Mobile />

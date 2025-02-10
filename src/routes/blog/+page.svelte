@@ -14,9 +14,9 @@
 
 <Metadata />
 
-<section class="mb-10">
+<section class="mx-auto max-w-7xl px-6 md:px-16">
 	<header class="mb-10">
-		<h1 class="mb-5 font-incognito text-3xl font-semibold tracking-tight">Blog</h1>
+		<h1 class="mb-5 font-incognito text-3xl font-semibold tracking-tight sm:text-5xl">Blog</h1>
 		<p class="mb-4 text-base leading-relaxed text-accent">
 			Welcome to my blog! Join me as I share what I've learned, the projects I'm working on, and
 			other interesting discoveries.
