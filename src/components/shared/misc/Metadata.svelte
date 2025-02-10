@@ -13,6 +13,7 @@
 			if (frontmatter && slug) {
 				return {
 					title: frontmatter.title,
+					nav: frontmatter.title,
 					path: pathname,
 					show: false,
 					description: frontmatter.description,
@@ -31,6 +32,7 @@
 			// Return default route values if no match found
 			return {
 				title: 'Page Not Found',
+				nav: 'Page Not Found',
 				path: pathname,
 				show: false,
 				description: '',
@@ -54,7 +56,6 @@
 
 <MetaTags
 	title={currentMeta.title}
-	titleTemplate="%s | Antonio Sarro"
 	description={currentMeta.description}
 	canonical={currentMeta.url}
 	openGraph={{

@@ -13,12 +13,12 @@
 		</a>
 		<nav class="hidden md:block">
 			<ul class="flex items-center gap-x-8">
-				{#each routes as { title, path, show }}
+				{#each routes as { nav, path, show }}
 					{#if show}
 						<li>
 							<a
 								class="font-incognito text-lg text-text duration-300 hover:text-primary"
-								href={path}>{title}</a
+								href={path}>{nav}</a
 							>
 						</li>
 					{/if}

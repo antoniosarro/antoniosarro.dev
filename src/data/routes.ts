@@ -1,5 +1,6 @@
 export interface Route {
 	title: string;
+	nav: string;
 	path: string;
 	show: boolean;
 	description: string;
@@ -17,7 +18,8 @@ export interface Route {
 
 export const routes: Route[] = [
 	{
-		title: 'Home',
+		title: 'Antonio Sarro | Software Developer',
+		nav: 'Home',
 		path: '/',
 		show: false,
 		description: 'Passionate Geek Guy, Software Developer and Writer',
@@ -33,7 +35,8 @@ export const routes: Route[] = [
 		}
 	},
 	{
-		title: 'About',
+		title: 'About | Antonio Sarro',
+		nav: 'About',
 		path: '/about',
 		show: true,
 		description: 'Do you want to know more about me? This is the right place',
@@ -49,7 +52,8 @@ export const routes: Route[] = [
 		}
 	},
 	{
-		title: 'Projects',
+		title: 'Projects | Antonio Sarro',
+		nav: 'Projects',
 		path: '/projects',
 		show: true,
 		description:
@@ -66,7 +70,8 @@ export const routes: Route[] = [
 		}
 	},
 	{
-		title: 'Blog',
+		title: 'Blog | Antonio Sarro',
+		nav: 'Blog',
 		path: '/blog',
 		show: true,
 		description: 'Some articles I have written to share my knowledge and discoveries',
