@@ -9,14 +9,10 @@
 	import { onDestroy, onMount } from 'svelte';
 
 	import { dev } from '$app/environment';
-	import type { UmamiTrackerConfiguration, WindowWithUmami } from '$types/umami';
+	import type { WindowWithUmami } from '$types/umami';
 
-	/** The unique ID of the website */
 	export let websiteID: string;
-	/** The URL of the Umami Analytics script */
 	export let srcURL: string;
-	/** Configuration options for the Umami Analytics script */
-	export let configuration: UmamiTrackerConfiguration = {};
 
 	onMount(() => {
 		if (
@@ -41,12 +37,10 @@
 
 	let shouldInitialize = [undefined, 'removed', 'error'].includes($status);
 
-	// It triggers after the script was loaded and executed
 	function scriptLoaded() {
 		$status = 'loaded';
 	}
 
-	// Errors that occur during the loading of the script
 	function errorHappened() {
 		$status = 'error';
 	}
@@ -61,7 +55,6 @@
 			data-testid="umami_analytics_script"
 			src={srcURL}
 			data-website-id={websiteID}
-			{...configuration}
 			on:load={scriptLoaded}
 			on:error={errorHappened}
 		></script>

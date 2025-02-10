@@ -1,5 +1,5 @@
 <div
-	class="group flex animate-pulse flex-col items-start gap-3 rounded-lg border border-elevation-one p-4"
+	class="group flex animate-pulse flex-col items-start gap-3 rounded-lg border border-elevation-one p-4 last:hidden xl:last:block"
 >
 	<div class="flex w-full flex-row items-center justify-between">
 		<div class="flex flex-row items-center gap-2">

@@ -11,7 +11,7 @@
 	href="/blog/{article.slug}"
 	class="group flex flex-col items-start gap-4 rounded-lg border border-elevation-one p-6 lg:flex-row lg:items-center"
 >
-	<div class="relative w-full overflow-clip sm:h-56 lg:h-52 lg:w-[450px]">
+	<div class="relative h-56 w-full overflow-clip lg:h-52 lg:min-w-[400px] lg:max-w-[400px]">
 		<img
 			class="rounded-md object-cover duration-300 group-hover:scale-125"
 			src={article.frontmatter.image}

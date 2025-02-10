@@ -2,7 +2,6 @@ export interface Frontmatter {
 	title: string;
 	description: string;
 	publishedAt: string;
-	updateAt?: string;
 	image?: string;
 	tags: string[];
 	draft: boolean;

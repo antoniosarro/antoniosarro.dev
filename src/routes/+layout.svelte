@@ -12,13 +12,7 @@
 	let { children } = $props();
 </script>
 
-<Umami
-	websiteID={env.PUBLIC_UMAMI_WEBSITE_ID}
-	srcURL={env.PUBLIC_UMAMI_SERVER_REMOTE}
-	configuration={{
-		'data-cache': true
-	}}
-/>
+<Umami websiteID={env.PUBLIC_UMAMI_WEBSITE_ID} srcURL={env.PUBLIC_UMAMI_SERVER_REMOTE} />
 <Toaster position="bottom-center" theme={$darkMode ? 'dark' : 'light'} />
 <Cursor />
 

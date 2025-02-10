@@ -1,6 +1,5 @@
 import { writable } from 'svelte/store';
 
-// Get the last value set from localStorage, defaulting to true if not found
 const lastStatus: boolean =
 	typeof localStorage !== 'undefined'
 		? JSON.parse(localStorage.getItem('umami') || '{"enabled": true}').enabled
@@ -14,5 +13,4 @@ isEnabled.subscribe((value) => {
 	}
 });
 
-// Status store for tracking various states
 export const status = writable<undefined | 'mounted' | 'removed' | 'loaded' | 'error'>(undefined);

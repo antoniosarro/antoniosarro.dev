@@ -40,6 +40,7 @@
 		{:else}
 			<SkeletonProject />
 			<SkeletonProject />
+			<SkeletonProject />
 		{/if}
 	</div>
 </section>
