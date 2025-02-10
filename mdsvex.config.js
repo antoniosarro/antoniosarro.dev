@@ -68,7 +68,8 @@ const prettyCodeOptions = {
 				'plaintext',
 				import('shiki/langs/svelte.mjs'),
 				import('shiki/langs/typescript.mjs'),
-				import('shiki/langs/bash.mjs')
+				import('shiki/langs/bash.mjs'),
+				import('shiki/langs/yml.mjs')
 			]
 		});
 	},
