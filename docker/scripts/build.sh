@@ -49,7 +49,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Get script directory and check required files
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && cd ../.. && pwd)"
 PACKAGE_JSON="$SCRIPT_DIR/package.json"
 
 # Validate required files
@@ -68,7 +68,7 @@ build_image() {
     local version="$1"
 
     echo "Building Docker image: $IMAGE_NAME:$version"
-    docker build -t "$IMAGE_NAME:$version" .
+    docker build -t "$IMAGE_NAME:$version" $SCRIPT_DIR
     docker tag "$IMAGE_NAME:$version" "$IMAGE_NAME:latest"
 }
 

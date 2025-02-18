@@ -1,34 +1,56 @@
 {
-  description = "A Nix-flake-based Node development environment";
-
-  inputs.nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1.*.tar.gz";
-
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
+    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
+  };
   outputs = {
     self,
     nixpkgs,
-  }: let
-    allSystems = ["x86_64-linux"];
+    nixpkgs-unstable,
+    flake-utils,
+  }:
+    flake-utils.lib.eachDefaultSystem
+    (
+      system: let
+        pkgs = import nixpkgs {
+          system = system;
+        };
+        pkgs-unstable = import nixpkgs-unstable {
+          system = system;
+        };
 
-    forAllSystems = fn:
-      nixpkgs.lib.genAttrs allSystems
-      (system: fn {pkgs = import nixpkgs {inherit system;};});
-  in {
-    devShells = forAllSystems ({pkgs}: {
-      default = pkgs.mkShell {
-        shellHook = ''
-            echo "🚀 Welcome to Node development environment"
-	          echo "Node version: $(node -v)"
-	          echo "Pnpm version: $(pnpm -v)"
-        '';
-        packages = with pkgs; [
-          # Node
+        common = with pkgs; [
           nodejs_23
-          nodePackages.pnpm
+          corepack_23
+        ];
 
+        unstable = with pkgs-unstable; [
           rustywind
           jq
         ];
-      };
-    });
-  };
+
+        # runtime Deps
+        libraries = with pkgs;
+          [
+          ]
+          ++ common;
+
+        # compile-time deps
+        packages = with pkgs;
+          [
+          ]
+          ++ common ++ unstable;
+      in {
+        devShells.default = pkgs.mkShell {
+          nativeBuildInputs = packages;
+          buildInputs = libraries;
+          shellHook = ''
+            echo "🚀 Development environment loaded"
+          '';
+        };
+
+        formatter = pkgs.alejandra;
+      }
+    );
 }

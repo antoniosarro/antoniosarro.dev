@@ -1,6 +1,6 @@
 # Base image with Node and pnpm
 FROM node:23.6.1-alpine3.21 AS base
-RUN npm i -g pnpm@9.14.2
+RUN npm i -g pnpm@10.2.0
 
 # Install dependencies
 FROM base AS deps
