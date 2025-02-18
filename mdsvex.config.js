@@ -1,15 +1,15 @@
 import { escapeSvelte } from '@huntabyte/mdsvex';
 import { transformerNotationHighlight } from '@shikijs/transformers';
 import { toHtml } from 'hast-util-to-html';
-import readingTime from 'mdsvex-reading-time';
 import { resolve } from 'path';
+import readingTime from 'reading-time'
 import rehypePrettyCode from 'rehype-pretty-code';
 import rehypeSlug from 'rehype-slug';
 import { getSingletonHighlighter } from 'shiki';
 import { visit } from 'unist-util-visit';
 
 /* REMARK */
-const replaceQuotes = () => (tree) => {
+const remarkReplaceQuotes = () => (tree) => {
 	visit(tree, 'text', (node) => {
 		node.value = node.value
 			.replace(/”/g, '"') // Replace curly double quotes with straight double quotes
@@ -18,6 +18,28 @@ const replaceQuotes = () => (tree) => {
 			.replace(/‘/g, "'"); // Replace straight single quotes with straight single quotes
 	});
 };
+
+
+const remarkReadingTime = (options={}) => {
+	const defaultOpt = {
+		attribute: "readingTime",
+        wpm: 200
+	}
+
+	let config = Object.assign({}, defaultOpt, options);
+	return (tree, file) => {
+		let content = "";
+		visit(tree, ['code', 'text'], (node) => {
+			content += node.value;
+		});
+
+		if (!file.data.fm) {
+			file.data.fm = {};
+		}
+
+		file.data.fm[config.attribute] = readingTime(content, {wordsPerMinute : config.wpm});
+	}
+}
 
 /* REHYPE */
 function rehypeCustomComponents() {
@@ -212,9 +234,9 @@ export const mdsvexOptions = {
 		_: resolve('./src/components/mdx/Blueprint.svelte')
 	},
 	remarkPlugins: [
-		replaceQuotes,
+		remarkReplaceQuotes,
 		[
-			readingTime,
+			remarkReadingTime,
 			{
 				wpm: 200
 			}
