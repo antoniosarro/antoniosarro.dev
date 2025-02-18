@@ -2,7 +2,7 @@ import { escapeSvelte } from '@huntabyte/mdsvex';
 import { transformerNotationHighlight } from '@shikijs/transformers';
 import { toHtml } from 'hast-util-to-html';
 import { resolve } from 'path';
-import readingTime from 'reading-time'
+import readingTime from 'reading-time';
 import rehypePrettyCode from 'rehype-pretty-code';
 import rehypeSlug from 'rehype-slug';
 import { getSingletonHighlighter } from 'shiki';
@@ -19,16 +19,15 @@ const remarkReplaceQuotes = () => (tree) => {
 	});
 };
 
-
-const remarkReadingTime = (options={}) => {
+const remarkReadingTime = (options = {}) => {
 	const defaultOpt = {
-		attribute: "readingTime",
-        wpm: 200
-	}
+		attribute: 'readingTime',
+		wpm: 200
+	};
 
 	let config = Object.assign({}, defaultOpt, options);
 	return (tree, file) => {
-		let content = "";
+		let content = '';
 		visit(tree, ['code', 'text'], (node) => {
 			content += node.value;
 		});
@@ -37,9 +36,9 @@ const remarkReadingTime = (options={}) => {
 			file.data.fm = {};
 		}
 
-		file.data.fm[config.attribute] = readingTime(content, {wordsPerMinute : config.wpm});
-	}
-}
+		file.data.fm[config.attribute] = readingTime(content, { wordsPerMinute: config.wpm });
+	};
+};
 
 /* REHYPE */
 function rehypeCustomComponents() {
