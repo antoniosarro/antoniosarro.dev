@@ -16,24 +16,24 @@
 			name: 'Twitter',
 			shareUrl: `https://twitter.com/intent/tweet?text=${encodeURIComponent(
 				'Thank you @antoniosarro for writing this post.'
-			)}.%0A%0A${title}%0A%0A${blog}${slug}`
+			)}.%0A%0A${title}%0A%0A${blog}/${slug}`
 		},
 		{
 			icon: 'mdi:linkedin',
 			name: 'LinkedIn',
-			shareUrl: `https://linkedin.com/sharing/share-offsite/?url=${blog}${slug}&title=${title}&summary=${description}`
+			shareUrl: `https://linkedin.com/sharing/share-offsite/?url=${blog}$/{slug}&title=${title}&summary=${description}`
 		},
 		{
 			icon: 'mdi:facebook',
 			name: 'Facebook',
-			shareUrl: `https://www.facebook.com/sharer/sharer.php?u=${blog}${slug}`
+			shareUrl: `https://www.facebook.com/sharer/sharer.php?u=${blog}/${slug}`
 		},
 		{
 			icon: 'mdi:whatsapp',
 			name: 'WhatsApp',
 			shareUrl: `https://api.whatsapp.com/send?text=${encodeURIComponent(
 				'Read this amazing article by Antonio Sarro'
-			)}.%0A%0A${title}%0A%0A${blog}${slug}`
+			)}.%0A%0A${title}%0A%0A${blog}/${slug}`
 		}
 	];
 
