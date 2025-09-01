@@ -1,3 +1,4 @@
+import { dev } from '$app/environment';
 import type { Blog } from '$types/blog';
 import { isValidBlogFile } from '$utils/blog';
 
@@ -13,7 +14,7 @@ export async function getBlogs() {
 				const frontmatter = file.metadata;
 				return { frontmatter, slug } as Blog;
 			})
-			.filter((blog): blog is Blog => blog !== null && !blog.frontmatter.draft)
+			.filter((blog): blog is Blog => blog !== null && (!blog.frontmatter.draft || dev))
 			.sort(
 				(a, b) =>
 					new Date(b.frontmatter.publishedAt).getTime() -

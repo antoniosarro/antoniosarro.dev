@@ -13,7 +13,8 @@
 		TypeScript: 'bg-blue-500',
 		JavaScript: 'bg-yellow-500',
 		Nix: 'bg-indigo-500',
-		Shell: 'bg-gray-500'
+		Shell: 'bg-gray-500',
+		Rust: 'bg-[#63452c]'
 	};
 </script>
 

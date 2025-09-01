@@ -46,16 +46,16 @@
 		</button>
 	</div>
 	<nav class="mt-6 flex flex-col">
-		{#each routes as { title, path, show, icon }}
+		{#each routes as { path, show, icon, nav }}
 			{#if show}
 				<a
 					class="group flex items-center gap-x-2 p-6 font-incognito text-lg font-semibold shadow-line"
-					aria-label={title}
+					aria-label={nav}
 					href={path}
 					onclick={() => onToggleNav()}
 				>
 					<iconify-icon noobserver height="20" width="20" class="flex" {icon}></iconify-icon>
-					{title}
+					{nav}
 				</a>
 			{/if}
 		{/each}

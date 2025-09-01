@@ -2,7 +2,7 @@ name: antoniosarro.dev
 
 services:
   frontend:
-    image: antoniosarro.dev:latest
+    image: antoniosarro.dev:1.1.1
     build:
       context: ../
       dockerfile: Dockerfile
@@ -16,7 +16,7 @@ services:
       - 3000:3000
 
   umami:
-    image: ghcr.io/umami-software/umami:postgresql-latest
+    image: ghcr.io/umami-software/umami:postgresql-v2.17.0
     ports:
       - 3001:3000
     environment:
@@ -35,7 +35,7 @@ services:
       retries: 5
 
   umami_db:
-    image: postgres:15-alpine
+    image: postgres:17.4-alpine3.21
     environment:
       - POSTGRES_DB=umami
       - POSTGRES_USER=umami

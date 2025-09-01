@@ -24,6 +24,11 @@ export const hardSkills: HardSkills[] = [
 				href: 'https://www.typescriptlang.org/'
 			},
 			{
+				title: '.NET',
+				icon: 'mdi:microsoft-dot-net',
+				href: 'https://dotnet.microsoft.com'
+			},
+			{
 				title: 'Bash',
 				icon: 'devicon-plain:bash',
 				href: 'https://www.gnu.org/software/bash/'
@@ -72,11 +77,6 @@ export const hardSkills: HardSkills[] = [
 				title: 'NodeJs',
 				icon: 'akar-icons:node-fill',
 				href: 'https://nodejs.org/en/'
-			},
-			{
-				title: 'NestJs',
-				icon: 'simple-icons:nestjs',
-				href: 'https://nestjs.com/'
 			},
 			{
 				title: 'Express',

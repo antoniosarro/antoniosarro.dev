@@ -9,5 +9,8 @@ export const projects: string[] = [
 	'rooky',
 	'mogrifyle',
 	'cloudflare-ddns',
-	'cfp-vercel-form'
+	'cfp-vercel-form',
+	'reforged-mars',
+	'saint-tracker',
+	'komodo'
 ];
