@@ -33,14 +33,20 @@
 			{article.frontmatter.description}
 		</p>
 		<div class="flex items-center gap-x-4 text-sm">
-			<dir class="flex items-center gap-x-2 p-0">
+			<div class="flex items-center gap-x-2">
 				<iconify-icon noobserver icon="solar:calendar-bold"></iconify-icon>
 				<time>{formatDateFull(article.frontmatter.publishedAt)}</time>
-			</dir>
+			</div>
 			<div class="flex items-center gap-x-2">
 				<iconify-icon noobserver icon="mingcute:time-fill"></iconify-icon>
 				<div>{article.frontmatter.readingTime.text}</div>
 			</div>
+			{#if article.views !== undefined}
+				<div class="flex items-center gap-x-2">
+					<iconify-icon noobserver icon="solar:eye-outline"></iconify-icon>
+					<div>{article.views} {article.views === 1 ? 'view' : 'views'}</div>
+				</div>
+			{/if}
 		</div>
 	</div>
 </a>

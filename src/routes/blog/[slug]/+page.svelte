@@ -12,7 +12,7 @@
 	import { formatDateFull } from '$lib/utils/date';
 
 	const { data } = $props();
-	let { Content, frontmatter, slug } = data;
+	let { Content, frontmatter, slug, views } = data;
 
 	let component: HTMLElement | undefined = $state();
 	let innerHTML: string = $state('');
@@ -47,6 +47,10 @@
 						<div class="flex items-center gap-x-2">
 							<iconify-icon noobserver icon="mingcute:time-fill"></iconify-icon>
 							<div>{frontmatter.readingTime.text}</div>
+						</div>
+						<div class="flex items-center gap-x-2">
+							<iconify-icon noobserver icon="solar:eye-outline"></iconify-icon>
+							<div>{views} {views === 1 ? 'view' : 'views'}</div>
 						</div>
 						<a class="ml-auto hidden items-center gap-x-2 text-primary sm:flex" href="#comments">
 							<iconify-icon noobserver icon="eva:message-circle-outline"></iconify-icon>

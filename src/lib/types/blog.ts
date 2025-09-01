@@ -18,4 +18,5 @@ export interface ReadingTime {
 export interface Blog {
 	slug: string;
 	frontmatter: Frontmatter;
+	views?: number;
 }
