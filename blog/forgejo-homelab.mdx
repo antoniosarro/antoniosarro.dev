@@ -1,0 +1,579 @@
+---
+title: 'Self-Hosted Git with Forgejo: Your Own GitHub Alternative in Docker'
+description: 'Learn how to deploy Forgejo, a lightweight and powerful self-hosted Git platform, using Docker in your homelab. Complete guide from installation to configuration with Forgejo Actions support.'
+publishedAt: '2025-12-14'
+image: '/images/blogs/forgejo-homelab/thumbnail.avif'
+tags:
+  - Forgejo
+  - Docker
+  - Git
+  - Homelab
+  - Self-Hosted
+draft: false
+series: 'homelab'
+seriesOrder: 1
+---
+
+<div id="introduction">
+	<p>
+		In the era of cloud services and third-party platforms, maintaining control over your code
+		repositories and development workflow is more important than ever. While platforms like GitHub
+		and GitLab offer robust features, they come with limitations on privacy, data ownership, and
+		sometimes cost.
+	</p>
+	<p>
+		Forgejo (pronounced for-jay-oh) is a self-hosted, lightweight Git platform that brings the power
+		of modern software development tools to your own infrastructure. As a community-driven fork of
+		Gitea, Forgejo provides an excellent alternative for developers who want complete control over
+		their code hosting environment. In this guide, we'll walk through setting up Forgejo in your
+		homelab using Docker, giving you a GitHub-like experience on your own terms.
+	</p>
+</div>
+
+## What is Forgejo
+
+[Forgejo](https://forgejo.org/) is an <span class="font-semibold text-primary">open-source</span>,
+self-hosted Git platform that provides a complete solution for managing repositories, issues, pull requests,
+and CI/CD workflows. Born from a community-driven fork of Gitea, Forgejo emphasizes democratic governance
+and user freedom while maintaining compatibility with its predecessor.
+
+Unlike cloud-hosted Git platforms, Forgejo runs entirely on your own infrastructure, giving you full
+control over your data, privacy, and customization options. It's lightweight enough to run on modest
+hardware while powerful enough to handle professional development workflows, making it perfect for
+homelab environments.
+
+### Key Features
+
+Forgejo offers a comprehensive set of features that rival commercial Git hosting platforms:
+
+- **Repository Management**: Full Git repository hosting with web-based browsing, file editing, and history viewing
+- **Pull Requests & Code Review**: Complete workflow for collaborative development with inline commenting and review tools
+- **Issue Tracking**: Built-in issue tracker with labels, milestones, and project boards
+- **Forgejo Actions**: Native CI/CD system compatible with GitHub Actions workflows
+- **Package Registry**: Host your own packages including Docker containers, NPM packages, and more
+- **Organizations & Teams**: Manage multiple users with granular permission controls
+- **Wiki & Documentation**: Built-in wiki for each repository
+- **Lightweight & Fast**: Minimal resource requirements make it ideal for homelab deployments
+
+## Homelab Setup Overview
+
+For this installation, I'm using a Proxmox LXC container with the following specifications:
+
+- **Host**: Proxmox VE LXC Container
+- **OS**: Alpine Linux with Docker
+- **CPU**: 1 vCPU
+- **RAM**: 512 MB
+- **Storage**: 8 GB (adjust based on expected repository size)
+
+This minimal configuration is sufficient for personal use or small team deployments. Forgejo's efficiency
+means it runs smoothly even on these modest resources.
+
+## Installation
+
+The easiest and most maintainable way to deploy Forgejo is using Docker Compose. This approach allows
+you to manage all components in a single configuration file and makes updates straightforward.
+
+### Prerequisites
+
+Before starting, ensure you have:
+
+- Docker and Docker Compose installed on your host
+- Basic understanding of Docker concepts
+- A domain name or IP address for accessing Forgejo (optional but recommended)
+
+### Docker Compose Configuration
+
+Create a new directory for your Forgejo installation and create a `docker-compose.yml` file:
+
+```bash
+mkdir -p ~/forgejo
+cd ~/forgejo
+```
+
+Now create the `docker-compose.yml` file with the following configuration:
+
+```yml showLineNumbers title="docker-compose.yml" /your-secure-secret-key/#ob /your-secure-postgres-password/#ob
+services:
+  server:
+    image: codeberg.org/forgejo/forgejo:13
+    container_name: forgejo
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      - FORGEJO__database__DB_TYPE=postgres
+      - FORGEJO__database__HOST=db:5432
+      - FORGEJO__database__NAME=forgejo
+      - FORGEJO__database__USER=forgejo
+      - FORGEJO__database__PASSWD=your-secure-postgres-password
+      - FORGEJO__security__SECRET_KEY=your-secure-secret-key
+    restart: always
+    networks:
+      - forgejo
+    volumes:
+      - ./forgejo:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - '3000:3000'
+      - '222:22'
+    depends_on:
+      - db
+
+  db:
+    image: postgres:17.5-alpine
+    container_name: forgejo_db
+    restart: always
+    environment:
+      - POSTGRES_USER=forgejo
+      - POSTGRES_PASSWORD=your-secure-postgres-password
+      - POSTGRES_DB=forgejo
+    networks:
+      - forgejo
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+
+networks:
+  forgejo:
+    external: false
+```
+
+**Important**: Replace the highlighted values:
+
+- `your-secure-secret-key`: Generate a random string using `openssl rand -base64 32`
+- `your-secure-postgres-password`: Choose a strong password for the database
+
+### Understanding the Configuration
+
+Let's break down the key components:
+
+**Forgejo Service**:
+
+- Uses the official Forgejo image from Codeberg
+- Port 3000 for the web interface
+- Port 222 for SSH Git access (mapped from container's port 22)
+- Mounts data directory for persistent storage
+- Configured to use PostgreSQL as the database
+
+**PostgreSQL Service**:
+
+- Uses the lightweight Alpine-based PostgreSQL image
+- Stores data persistently in the `postgres` directory
+- Configured to work seamlessly with Forgejo
+
+### Starting Forgejo
+
+With your `docker-compose.yml` file configured, start the services:
+
+```bash
+docker compose up -d
+```
+
+This command will:
+
+1. Pull the required Docker images
+2. Create the necessary networks
+3. Start both the database and Forgejo containers
+
+Check that everything is running correctly:
+
+```bash
+docker compose ps
+```
+
+You should see both `forgejo` and `forgejo_db` containers running.
+
+```bash
+test:~/forgejo# docker compose ps
+
+NAME         IMAGE                             COMMAND                  SERVICE   CREATED          STATUS          PORTS
+forgejo      codeberg.org/forgejo/forgejo:10   "/usr/bin/entrypoint…"   server    24 minutes ago   Up 24 minutes   0.0.0.0:3000->3000/tcp, [::]:3000->3000/tcp, 0.0.0.0:222->22/tcp, [::]:222->22/tcp
+forgejo_db   postgres:14-alpine                "docker-entrypoint.s…"   db        24 minutes ago   Up 24 minutes   5432/tcp
+```
+
+## Initial Configuration
+
+Now that Forgejo is running, you'll need to complete the initial setup through the web interface.
+
+### Accessing the Setup Wizard
+
+1. Open your web browser and navigate to `http://your-server-ip:3000`
+2. You'll be greeted with the Forgejo installation wizard
+
+![setup wizard](/images/blogs/forgejo-homelab/1.png)
+
+### Database Configuration
+
+The database settings should be pre-filled based on your Docker Compose environment variables:
+
+- **Database Type**: PostgreSQL
+- **Host**: `db:5432`
+- **Username**: `forgejo`
+- **Password**: (the password you set in docker-compose.yml)
+- **Database Name**: `forgejo`
+
+![database configuration](/images/blogs/forgejo-homelab/2.png)
+
+### General Settings
+
+Configure the following essential settings:
+
+**Server Settings**:
+
+- **Instance title**: Choose a name for your Forgejo instance (e.g., "My Homelab Git")
+- **Repository Root Path**: Leave as default (`/data/git/repositories`)
+- **Git LFS Root Path**: Leave as default (`/data/git/lfs`)
+
+**Server Domain and URL**:
+
+- **SSH Server Domain**: Your server's IP or domain
+- **Base URL**: `http://your-server-ip:3000` (or your custom domain if configured)
+- **SSH Server Port**: `222` (matching the external port from docker-compose.yml)
+
+![general settings](/images/blogs/forgejo-homelab/3.png)
+
+### Administrator Account
+
+Create your administrator account:
+
+- **Administrator Username**: Choose your admin username
+- **Password**: Set a strong password
+- **Email Address**: Your email address
+
+![administrator account](/images/blogs/forgejo-homelab/4.png)
+
+### Optional Settings
+
+You can configure additional settings or leave them as defaults:
+
+- **Email Settings**: Configure if you want email notifications
+- **Server and Other Services**: Enable/disable features as needed
+- **Hidden Email Domains**: Optional privacy feature
+
+Once configured, click **Install Forgejo** to complete the setup.
+
+## Post-Installation Configuration
+
+After the initial setup, there are several configurations you should consider to optimize your Forgejo instance.
+
+### Creating Your First Repository
+
+Let's create a test repository to verify everything is working:
+
+1. Click the **+** icon in the top navigation bar
+2. Select **New Repository**
+3. Fill in the repository details:
+   - **Repository Name**: `test-repo`
+   - **Description**: Optional description
+   - **Visibility**: Public or Private
+   - **Initialize Repository**: Check "Initialize repository with README"
+
+4. Click **Create Repository**
+
+![creating repo](/images/blogs/forgejo-homelab/5.png)
+
+<br />
+![repo created](/images/blogs/forgejo-homelab/6.png)
+
+### Setting Up SSH Access
+
+To push and pull code via SSH, you need to add your SSH key to Forgejo:
+
+1. Generate an SSH key on your local machine (if you don't have one):
+
+```bash
+ssh-keygen -t ed25519 -C "your-email@example.com"
+```
+
+2. Copy your public key:
+
+```bash
+cat ~/.ssh/id_ed25519.pub
+```
+
+3. In Forgejo, navigate to **Settings** → **SSH / GPG Keys**
+4. Click **Add Key**
+5. Paste your public key and give it a descriptive name
+6. Click **Add Key**
+
+![ssh key](/images/blogs/forgejo-homelab/7.png)
+
+### Testing SSH Connection
+
+Verify your SSH connection works:
+
+```bash
+ssh -T git@your-server-ip -p 222
+```
+
+You should see a welcome message from Forgejo.
+
+## Setting Up Forgejo Actions (CI/CD)
+
+Forgejo Actions provides GitHub Actions-compatible CI/CD capabilities. Setting this up requires deploying a Forgejo Runner.
+
+### What are Forgejo Actions?
+
+Forgejo Actions is a CI/CD system that allows you to automate workflows like:
+
+- Running tests on every commit
+- Building and deploying applications
+- Automating release processes
+- Running code quality checks
+
+### Runner Architecture
+
+The Forgejo Runner operates separately from the main Forgejo instance and executes workflow jobs. For isolation and security, runners typically use Docker-in-Docker (DinD) to create clean environments for each job.
+
+### Installing the Forgejo Runner
+
+We'll set up the runner using Docker Compose. Create a new directory:
+
+```bash
+mkdir -p ~/forgejo-runner
+cd ~/forgejo-runner
+```
+
+Create a `docker-compose.yml` file for the runner:
+
+```yml showLineNumbers title="docker-compose.yml"
+services:
+  docker-in-docker:
+    image: docker:dind
+    container_name: 'docker_dind'
+    privileged: 'true'
+    command: ['dockerd', '-H', 'tcp://0.0.0.0:2375', '--tls=false']
+    restart: 'unless-stopped'
+
+  runner:
+    image: 'data.forgejo.org/forgejo/runner:11'
+    links:
+      - docker-in-docker
+    depends_on:
+      docker-in-docker:
+        condition: service_started
+    container_name: 'runner'
+    environment:
+      DOCKER_HOST: tcp://docker-in-docker:2375
+    # User without root privileges, but with access to `./data`.
+    user: 1001:1001
+    volumes:
+      - ./data:/data
+    restart: 'unless-stopped'
+
+    command: '/bin/sh -c "while : ; do sleep 1 ; done ;"'
+```
+
+Prepare the data directory with proper permissions:
+
+```bash
+mkdir -p data/.cache
+chmod 775 data/.cache
+chmod g+s data/.cache
+```
+
+Start the runner containers:
+
+```bash
+docker compose up -d
+```
+
+### Registering the Runner
+
+Before the runner can execute jobs, it must be registered with your Forgejo instance.
+
+1. **Get a Registration Token** from Forgejo:
+   - Navigate to **Site Administration** → **Actions** → **Runners**
+   - Click **Create new Runner**
+   - Copy the registration token
+
+![registering runner](/images/blogs/forgejo-homelab/8.png)
+
+2. **Register the runner**:
+
+Enter the runner container:
+
+```bash
+docker exec -it runner /bin/sh
+```
+
+Run the registration command:
+
+```bash
+forgejo-runner register
+```
+
+You'll be prompted for:
+
+- **Forgejo instance URL**: `http://your-forgejo-ip:3000`
+- **Registration token**: Paste the token from step 1
+- **Runner name**: Choose a descriptive name (e.g., `homelab-runner`)
+- **Runner labels**: Accept the defaults or customize (e.g., `docker:docker://node:20-alpine`)
+
+```bash
+~ $ forgejo-runner register
+INFO Registering runner, arch=amd64, os=linux, version=v11.3.1.
+WARN Runner in user-mode.
+INFO Enter the Forgejo instance URL (for example, https://next.forgejo.org/):
+INFO Enter the Forgejo instance URL (for example, https://next.forgejo.org/):
+http://10.10.30.80:3000
+INFO Enter the runner token:
+BH8D9jwYl2Ei6XeO8Y0yZO0rBLbsV6fjuVSTwNNs
+INFO Enter the runner name (if set empty, use hostname: bef3274c04b1):
+homelab-runner
+INFO Enter the runner labels, leave blank to use the default labels (comma-separated, for example, ubuntu-20.04:docker://node:20-bookworm,ubuntu-18.04:docker://node:20-bookworm):
+
+INFO Registering runner, name=homelab-runner, instance=http://10.10.30.80:3000, labels=[docker:docker://data.forgejo.org/oci/node:20-bullseye].
+DEBU Successfully pinged the Forgejo instance server
+INFO Runner registered successfully.
+```
+
+3. **Verify the registration**:
+
+Exit the container and check that the `.runner` file was created:
+
+```bash
+exit
+ls -la data/
+```
+
+4. **Update the runner to start properly**:
+
+Edit the `docker-compose.yml` and change the command line:
+
+```yml
+command: '/bin/sh -c "sleep 5; forgejo-runner daemon"'
+```
+
+Restart the runner:
+
+```bash
+docker compose down
+docker compose up -d
+```
+
+5. **Verify in Forgejo**:
+   - Go back to **Site Administration** → **Actions** → **Runners**
+   - You should see your runner listed with an "Idle" status
+
+![runner status](/images/blogs/forgejo-homelab/9.png)
+
+### Testing Forgejo Actions
+
+Create a simple workflow to test your runner:
+
+1. In one of your repositories, create a `.forgejo/workflows` directory
+2. Create a file named `test.yml`:
+
+```yaml
+name: Test Workflow
+on: [push]
+
+jobs:
+  test:
+    runs-on: docker
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run a test command
+        run: echo "Hello from Forgejo Actions!"
+```
+
+3. Commit and push this file
+4. Navigate to the **Actions** tab in your repository
+5. You should see the workflow running or completed
+
+![action status](/images/blogs/forgejo-homelab/10.png)
+
+## Backup and Maintenance
+
+### Backing Up Forgejo
+
+Regular backups are essential for protecting your data. The key directories to backup are:
+
+```bash
+# Backup data directory
+tar -czf forgejo-backup-$(date +%Y%m%d).tar.gz ./forgejo
+
+# Backup database (while running)
+docker exec forgejo_db pg_dump -U forgejo forgejo > forgejo-db-$(date +%Y%m%d).sql
+```
+
+Consider setting up automated backups using a cron job:
+
+```bash
+0 2 * * * cd /path/to/forgejo && bash backup.sh
+```
+
+### Updating Forgejo
+
+To update Forgejo to a new version:
+
+1. Backup your data first
+2. Edit `docker-compose.yml` and update the image tag
+3. Pull the new image and restart:
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+### Monitoring Resource Usage
+
+Keep an eye on your Forgejo instance's resource usage:
+
+```bash
+docker stats forgejo forgejo_db
+```
+
+With 512MB RAM, you should have plenty of headroom for normal usage. If you plan to host many large repositories or have multiple concurrent users, consider increasing resources.
+
+## Troubleshooting
+
+### Common Issues
+
+**Can't access Forgejo web interface**:
+
+- Check if containers are running: `docker compose ps`
+- Verify port 3000 is not blocked by firewall
+- Check logs: `docker compose logs forgejo`
+
+**SSH connection failures**:
+
+- Verify SSH port 222 is accessible
+- Check SSH key is properly added in Forgejo settings
+- Test connection: `ssh -T git@your-server -p 222 -v` for verbose output
+
+**Runner not picking up jobs**:
+
+- Verify runner is registered: check Forgejo admin panel
+- Check runner logs: `docker compose logs runner`
+- Ensure Docker-in-Docker container is running: `docker compose ps`
+
+**Database connection errors**:
+
+- Check database container is running
+- Verify credentials match in docker-compose.yml
+- Check database logs: `docker compose logs db`
+
+## Conclusion
+
+You now have a fully functional self-hosted Git platform running in your homelab with CI/CD capabilities through Forgejo Actions. This setup provides you with:
+
+- Complete control over your code and data
+- GitHub-like features without vendor lock-in
+- Automated workflows for testing and deployment
+- A lightweight solution that runs on minimal resources
+
+Forgejo is actively developed by a vibrant community and continues to gain features while maintaining its commitment to user freedom and democratic governance. Whether you're a solo developer, running a small team, or just want to experiment with self-hosting, Forgejo provides an excellent foundation for your development workflow.
+
+## Next Steps
+
+Now that you have Forgejo running, consider:
+
+- Setting up a reverse proxy with HTTPS for secure access
+- Configuring email notifications for issues and pull requests
+- Exploring the package registry for hosting Docker images or other artifacts
+- Integrating with other homelab services like monitoring tools
+
+Happy self-hosting!

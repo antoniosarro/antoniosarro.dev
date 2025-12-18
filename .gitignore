@@ -1,0 +1,9 @@
+.direnv
+.svelte-kit
+.vscode
+/build
+node_modules
+static/fonts
+static/images
+.env
+CHANGELOG.test.md

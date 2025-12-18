@@ -1,0 +1,771 @@
+---
+title: 'Building a High-Performance Portfolio with SvelteKit: A Deep Dive'
+description: 'How I built a lightning-fast static portfolio with custom MDX processing, aggressive font optimization, and a unique midnight rebuild strategy.'
+publishedAt: '2025-12-04'
+image: '/images/blogs/building-portfolio/thumbnail.jpeg'
+tags:
+  - SvelteKit
+  - Performance
+  - DevOps
+  - Self-hosting
+draft: false
+---
+
+<div id="introduction">
+	<p>
+		In the age of drag-and-drop website builders and managed platforms, I chose to build my
+		portfolio from scratch. Not because it's easier (it's definitely not), but because building your
+		own tools teaches you things that using pre-built solutions never will.
+	</p>
+	<p>
+		This article is a deep dive into how I built a high-performance portfolio using SvelteKit, with
+		a focus on performance optimization, self-hosting, and developer experience. We'll cover
+		everything from custom MDX processing to aggressive font optimization, and why I chose to
+		rebuild the entire site every night instead of making runtime API calls.
+	</p>
+</div>
+
+## Why Build From Scratch?
+
+Before diving into the technical details, let's address the elephant in the room: why spend weeks building
+something you could deploy in hours with a template?
+
+For me, it came down to three core principles:
+
+- **Learning by doing**: Self-hosting and building from scratch forces you to understand every layer of
+  your stack. You can't just blame "the platform" when something breaks—you _are_ the platform.
+- **Performance without compromise**: Pre-built solutions optimize for features, not performance.
+  Building from scratch means I can make aggressive optimizations that would be impossible with a generic platform.
+- **Independence**: Relying on third-party platforms means accepting their limitations, pricing, and
+  architectural decisions. Self-hosting means owning your data and infrastructure.
+
+## Architecture Overview: Static with Daily Rebuilds
+
+The core of this portfolio is a **static site** generated with SvelteKit. But here's the twist:
+instead of making client-side API calls for dynamic data (GitHub projects, contribution graphs,
+blog analytics), I rebuild the entire site every night at midnight using a CI/CD pipeline.
+
+This might sound wasteful, but it's actually genius for this use case:
+
+- **Zero runtime overhead**: No loading spinners, no API rate limits, no failed requests
+- **Better SEO**: All content is in the HTML, no client-side data fetching
+- **Simpler code**: No complex state management for loading/error states
+- **Cost effective**: One nightly build vs thousands of API calls
+
+The data still feels "live" because it updates daily, but users get instant page loads with zero JavaScript overhead.
+
+## Tech Stack & Design Decisions
+
+### Why SvelteKit Over Next.js?
+
+I'll be honest: I love React for large applications with complex state.
+But for a content-focused site like a portfolio, Svelte wins for several reasons:
+
+- **Less magic, more clarity**: Svelte's reactivity is explicit. When you write `let count = 0`,
+  that's actually what you get, no hooks, no dependency arrays, no mental model about when things re-render.
+- **True reactivity without virtual DOM**: React diffs the virtual DOM on every render. Svelte
+  compiles to vanilla JavaScript that directly updates the DOM. For content-heavy pages, this is significantly faster.
+- **Better developer experience**: Svelte 5's runes (`$state`, `$derived`, `$effect`) make
+  reactive programming intuitive. No more `useState`, `useEffect`, `useMemo` soup.
+
+```typescript
+// React: Multiple hooks for simple reactivity
+const [count, setCount] = useState(0);
+const doubled = useMemo(() => count * 2, [count]);
+
+// Svelte: Direct and obvious
+let count = $state(0);
+let doubled = $derived(count * 2);
+```
+
+### The Self-Hosting Philosophy
+
+Every third-party service in this portfolio could be replaced with a managed solution:
+
+- Umami analytics → Google Analytics
+- GitHub contribution scraping → GitHub API with tokens
+- Self-hosted deployment → Vercel/Netlify
+
+But I chose self-hosting because:
+
+- **Learning**: Setting up Nginx, Docker, and Komodo taught me more about web infrastructure than
+  years of using managed platforms.
+- **Control**: I decide when to upgrade, what data to collect, how to cache responses.
+- **Cost**: My entire infrastructure costs less than most analytics platforms alone.
+- **Privacy**: No third-party scripts tracking my visitors.
+
+## Content Pipeline: Custom MDX Processing
+
+One of the biggest challenges was building a custom MDX processor that could handle:
+
+- Syntax highlighting with custom themes
+- Line numbers and line highlighting
+- Custom components (like code block titles)
+- Heading extraction for table of contents
+- Reading time calculation
+
+### The Problem with Standard MDX
+
+Most MDX solutions (like `@mdx-js/mdx`) are designed for React and don't integrate well with Svelte.
+More importantly, they don't give you enough control over the rendering pipeline.
+
+I needed:
+
+- Custom syntax for line highlighting (`// ++add`, `// --del`)
+- Automatic heading ID generation for anchor links
+- Code block metadata extraction (language, title, line numbers)
+- Pre-processing for optimization
+
+### Building a Custom Processor
+
+I built a custom processor using `unified`, `rehype`, and `remark`:
+
+```typescript
+export async function processMDX(content: string): Promise<ProcessedContent> {
+	const result = await unified()
+		// Parse markdown to AST
+		.use(remarkParse)
+		.use(remarkReplaceQuotes)
+
+		// Convert markdown AST to HTML AST
+		.use(remarkRehype, { allowDangerousHtml: true })
+
+		// Process HTML AST
+		.use(rehypeCustomComponents)
+		.use(rehypeSlug)
+		.use(rehypeAutolinkHeadings, {
+			behavior: 'wrap',
+			properties: { className: ['link-hover'] }
+		})
+		.use(rehypePrettyCode, prettyCodeOptions)
+		.use(rehypeHandleMetadata)
+		.use(rehypeRenderCode)
+
+		// Convert to HTML string
+		.use(rehypeStringify, { allowDangerousHtml: true })
+		.process(content);
+
+	const html = String(result);
+	return extractMetadata(html);
+}
+```
+
+This pipeline:
+
+- Parses the markdown into an AST (Abstract Syntax Tree)
+- Applies custom transformations (smart quotes, heading IDs)
+- Runs syntax highlighting with Shiki
+- Extracts metadata (headings for TOC, code blocks)
+- Converts everything to optimized HTML
+
+### Custom Syntax Highlighting
+
+One of my favorite features is custom line highlighting in code blocks:
+
+```typescript
+function example() {
+  const old = "This will be highlighted red"; // --del
+  const new = "This will be highlighted green"; // ++add
+  return new;
+}
+```
+
+This is achieved with a custom rehype plugin that scans for special comments:
+
+```typescript
+function processCustomCodeBlockHighlights(children: ElementContent[]): void {
+	children.forEach((child) => {
+		if (child.type !== 'element') {
+			return;
+		}
+
+		// Process line spans
+		if (child.tagName === 'span' && 'data-line' in (child.properties || {})) {
+			let shouldAddHighlight = false;
+			let shouldRemoveHighlight = false;
+
+			// Check each child span for highlight markers
+			child.children.forEach((innerChild) => {
+				if (innerChild.type !== 'element' || innerChild.tagName !== 'span') {
+					return;
+				}
+
+				const textNode = innerChild.children.find((c): c is Text => c.type === 'text');
+
+				if (!textNode?.value) {
+					return;
+				}
+
+				// Check for add patterns
+				for (const pattern of ADD_HIGHLIGHT_PATTERNS) {
+					if (textNode.value.includes(pattern)) {
+						shouldAddHighlight = true;
+						textNode.value = textNode.value.replace(pattern, '').trim();
+					}
+				}
+
+				// Check for remove patterns
+				for (const pattern of REMOVE_HIGHLIGHT_PATTERNS) {
+					if (textNode.value.includes(pattern)) {
+						shouldRemoveHighlight = true;
+						textNode.value = textNode.value.replace(pattern, '').trim();
+					}
+				}
+			});
+
+			// Apply highlight attributes
+			child.properties = child.properties || {};
+			if (shouldAddHighlight) {
+				child.properties['data-highlighted-line-id'] = 'add';
+				child.properties['data-highlighted-line'] = '';
+			} else if (shouldRemoveHighlight) {
+				child.properties['data-highlighted-line-id'] = 'remove';
+				child.properties['data-highlighted-line'] = '';
+			}
+		}
+
+		// Recurse into nested children
+		if (child.children?.length > 0) {
+			processCustomCodeBlockHighlights(child.children);
+		}
+	});
+}
+```
+
+### Reading Time Calculation
+
+Every blog post automatically gets reading time calculated based on word count:
+
+```typescript
+export function calculateReadingTime(text: string, wordsPerMinute: number = 200): ReadingTimeStats {
+	const words = text
+		.trim()
+		.split(/\s+/)
+		.filter((word) => word.length > 0);
+	const wordCount = words.length;
+	const timeInMilliseconds = (wordCount / wordsPerMinute) * 60 * 1000;
+	const minutes = Math.ceil(timeInMilliseconds / 60000);
+
+	return {
+		text: `${minutes} min read`,
+		minutes,
+		time: timeInMilliseconds,
+		words: wordCount
+	};
+}
+```
+
+This runs at build time and gets stored in the frontmatter, so there's zero runtime cost.
+
+## Performance Optimization: Font Subsetting
+
+The biggest performance win came from aggressive font optimization. I use two custom fonts
+(Incognito and Inter), and without optimization, they would add over 300KB to every page load.
+
+### The Problem
+
+Font files contain glyphs for thousands of characters, most of which you'll never use.
+Why serve Cyrillic characters if your site is in English?
+
+### The Solution: pyftsubset
+
+I built a custom font optimization pipeline using `pyftsubset` from the `fonttools` Python library:
+
+```typescript
+export class PyftsubsetOptimizer {
+	async optimizeFonts(fontFamilies: FontFamily[]): Promise<FontStats> {
+		// Extract all characters used in the site
+		const unicodes = await this.extractUnicodes();
+
+		// Optimize each font family
+		for (const fontFamily of fontFamilies) {
+			await this.optimizeFontFamily(fontFamily, unicodes);
+		}
+	}
+
+	private async extractUnicodes(): Promise<string> {
+		const htmlFiles = await glob(`${this.buildDir}/**/*.html`);
+		const allChars = new Set<string>();
+
+		for (const file of htmlFiles) {
+			const content = fs.readFileSync(file, 'utf-8');
+			// Strip HTML tags and extract text
+			const textContent = content
+				.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+				.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+				.replace(/<[^>]+>/g, ' ');
+
+			for (const char of textContent) {
+				allChars.add(char);
+			}
+		}
+
+		// Convert to unicode ranges for pyftsubset
+		return Array.from(allChars)
+			.map((char) => `U+${char.charCodeAt(0).toString(16).toUpperCase().padStart(4, '0')}`)
+			.join(',');
+	}
+
+	private async optimizeFont(
+		fontFile: string,
+		inputDir: string,
+		outputDir: string,
+		unicodes: string
+	): Promise<OptimizationResult> {
+		ExecUtils.execute(
+			`pyftsubset "${inputPath}" \
+        --output-file="${outputPath}" \
+        --flavor=woff2 \
+        --unicodes="${unicodes}" \
+        --layout-features="*" \
+        --no-hinting \
+        --desubroutinize`
+		);
+	}
+}
+```
+
+### The Results
+
+The optimization is run as part of the Docker build process, and the results are dramatic:
+
+```bash
+📝 Processing incognito fonts...
+  ✓ incognito_regular.woff2: 65.2KB → 15.4KB (76.3% reduction)
+  ✓ incognito_medium.woff2: 82.7KB → 18.1KB (78% reduction)
+  ✓ incognito_condensed.woff2: 50.0KB → 15.1KB (69.8% reduction)
+  ✓ incognito_bold.woff2: 55.6KB → 15.4KB (72.3% reduction)
+
+📝 Processing inter fonts...
+  ✓ inter-latin-400-normal.woff2: 23.1KB → 11.1KB (51.9% reduction)
+  ✓ inter-latin-600-normal.woff2: 23.7KB → 11.6KB (51.3% reduction)
+  ✓ inter-latin-700-normal.woff2: 23.8KB → 11.6KB (51.3% reduction)
+  ✓ inter-latin-800-normal.woff2: 23.9KB → 11.6KB (51.7% reduction)
+
+📊 Optimization Summary
+Total fonts processed: 8
+Successfully optimized: 8
+Total size: 328.1KB → 109.3KB
+Overall reduction: 66.7%
+```
+
+That's **218KB saved** on font files alone, nearly 70% reduction!
+
+### Build Integration
+
+Font optimization is seamlessly integrated into the build process:
+
+```json
+{
+	"scripts": {
+		"build": "vite build",
+		"optimize:fonts:pyftsubset": "tsx scripts/optimize-fonts-pyftsubset.ts",
+		"replace:fonts": "tsx scripts/replace-fonts.ts",
+		"build:prod": "vite build && pnpm run optimize:fonts:pyftsubset && pnpm run replace:fonts"
+	}
+}
+```
+
+The workflow:
+
+- `vite build`: creates the production build with original fonts
+- `optimize:fonts:pyftsubset`: analyzes the HTML and creates optimized fonts
+- `replace:fonts`: swaps the original fonts with optimized ones in the build directory
+
+## Data Fetching: The Prerender Approach
+
+Instead of client-side API calls, all data is fetched at build time using SvelteKit's `prerender()` function:
+
+```typescript
+export const getGithubProjects = prerender(async () => {
+	const repos = await Promise.all(projects.map((project) => fetchRepository(project.name)));
+
+	return repos
+		.filter((repo): repo is RepositoryInfo => repo !== undefined)
+		.sort((a, b) => new Date(b.lastUpdate).getTime() - new Date(a.lastUpdate).getTime());
+});
+```
+
+This runs once during the build, and the results are baked into the static HTML.
+No loading spinners, no API rate limits, no runtime JavaScript needed.
+
+### GitHub Contribution Graph
+
+One of my favorite features is the GitHub contribution graph, which I scrape directly from GitHub's HTML:
+
+```typescript
+export const getGithubContributions = prerender(async (): Promise<{ [year: number]: Result }> => {
+	const username = 'antoniosarro';
+	const years = getGitHubYears(2024);
+
+	const results = await Promise.allSettled(
+		years.map(async (year) => ({
+			year,
+			data: await fetchYearContributions(username, year)
+		}))
+	);
+
+	const contributions: { [year: number]: Result } = {};
+
+	results.forEach((result) => {
+		if (result.status === 'fulfilled') {
+			contributions[result.value.year] = result.value.data;
+		}
+	});
+
+	return contributions;
+});
+
+async function scrapeGithubContribution(username: string, year: number): Promise<string> {
+	const url = `https://github.com/users/${username}/contributions?from=${year}-01-01&to=${year}-12-31`;
+	const response = await fetch(url);
+	return response.text();
+}
+```
+
+This scrapes the contribution data, parses the HTML with `linkedom`, and generates a custom calendar visualization—all at build time.
+
+### Why Nightly Rebuilds Win
+
+You might wonder: why rebuild the entire site every night instead of using client-side API calls?
+
+- **Performance**: Static HTML is instant. No loading states, no spinners, no CLS (Cumulative Layout Shift).
+
+- **Reliability**: No API rate limits, no failed requests, no error handling needed.
+
+- **SEO**: All content is in the HTML source. Search engines see the full page immediately.
+
+- **Cost**: One build per day vs potentially thousands of API calls.
+
+- **Simplicity**: No complex state management, no caching strategies, no stale data concerns.
+
+The only downside? Data is up to 24 hours old. But for a portfolio, that's perfectly acceptable.
+
+## Development Environment: Nix Flake
+
+One of the most powerful decisions was using a Nix flake for the development environment.
+This ensures anyone can clone the repo and have an identical development setup in seconds.
+
+```nix
+{
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
+    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
+  };
+
+  outputs = { self, nixpkgs, nixpkgs-unstable, flake-utils }:
+    flake-utils.lib.eachDefaultSystem (system: let
+      pkgs = import nixpkgs { system = system; };
+
+      # Node.js environment
+      nodePackages = with pkgs; [
+        nodejs_24
+        corepack_24
+      ];
+
+      # Python with font optimization tools
+      pythonEnv = pkgs.python3.withPackages (ps: with ps; [
+        fonttools
+        brotli
+        zopfli
+        pip
+      ]);
+
+      packages = nodePackages ++ [ pythonEnv ];
+    in {
+      devShells.default = pkgs.mkShell {
+        nativeBuildInputs = packages;
+
+        shellHook = ''
+          echo "🚀 Development environment loaded"
+          echo "Available tools:"
+          echo "  • Node.js $(node --version)"
+          echo "  • pnpm $(pnpm --version)"
+          echo "  • pyftsubset $(pyftsubset --version 2>/dev/null || echo 'installed')"
+        '';
+      };
+    });
+}
+```
+
+With `direnv` configured, just `cd`ing into the project directory automatically loads the entire environment:
+
+```bash
+$ cd antoniosarro.dev
+direnv: loading ~/antoniosarro.dev/.envrc
+🚀 Development environment loaded
+
+Available tools:
+  • Node.js v24.9.0
+  • pnpm 10.18.3
+  • pyftsubset installed
+```
+
+No more "works on my machine" problems. No Docker for development. Just pure, reproducible environments.
+
+## Production Deployment
+
+### Multi-Stage Docker Build
+
+The production build uses a multi-stage Dockerfile to keep the final image tiny:
+
+```dockerfile
+# Build stage
+FROM node:24-alpine AS builder
+
+# Install Python and font tools
+RUN apk add --no-cache \
+    python3 \
+    py3-pip \
+    make \
+    g++ \
+    && python3 -m venv /opt/venv \
+    && . /opt/venv/bin/activate \
+    && pip install --no-cache-dir fonttools brotli zopfli
+
+ENV PATH="/opt/venv/bin:$PATH"
+
+WORKDIR /app
+COPY package.json pnpm-lock.yaml ./
+RUN corepack enable && pnpm install --frozen-lockfile
+
+COPY . .
+
+# Build with font optimization
+RUN pnpm run build && \
+    pnpm run optimize:fonts:pyftsubset && \
+    pnpm run replace:fonts
+
+# Production stage
+FROM nginx:alpine-slim AS production
+
+COPY nginx.conf /etc/nginx/nginx.conf
+COPY --from=builder /app/build /usr/share/nginx/html
+
+# Security: Run as non-root user
+RUN addgroup -g 1001 -S nginx-user && \
+    adduser -S -D -H -u 1001 -h /var/cache/nginx \
+    -s /sbin/nologin -G nginx-user -g nginx-user nginx-user
+
+USER nginx-user
+EXPOSE 8080
+```
+
+The final image is only **15MB**—smaller than most base images!
+
+### Nginx Configuration
+
+Nginx serves the static files with aggressive caching:
+
+```nginx
+server {
+  listen 8080;
+  root /usr/share/nginx/html;
+
+  # Cache static assets for 1 year
+  location ~* \.(jpg|jpeg|png|gif|ico|css|js|svg|woff|woff2|ttf|eot|avif|webp)$ {
+    expires 1y;
+    add_header Cache-Control "public, immutable";
+  }
+
+  # Cache HTML for 1 hour
+  location ~* \.html$ {
+    expires 1h;
+    add_header Cache-Control "public, must-revalidate";
+  }
+
+  # Gzip compression
+  gzip on;
+  gzip_vary on;
+  gzip_comp_level 6;
+  gzip_types text/plain text/css text/xml text/javascript
+             application/json application/javascript;
+
+  # Security headers
+  add_header X-Frame-Options "SAMEORIGIN" always;
+  add_header X-Content-Type-Options "nosniff" always;
+  add_header X-XSS-Protection "1; mode=block" always;
+}
+```
+
+### CI/CD with Komodo
+
+Every night at midnight, a Komodo agent:
+
+- Pulls the latest code from GitHub
+- Builds a fresh Docker image
+- Deploys the new container with zero downtime
+
+This means my projects, GitHub contributions, and blog views are always up-to-date without any
+runtime API calls. (I'll write a detailed article about my homelab setup with Komodo in the future.)
+
+## Performance Results
+
+Let's look at the actual performance metrics:
+
+### Lighthouse Scores
+
+[INSERT LIGHTHOUSE SCREENSHOT HERE]
+
+### Font Optimization Impact
+
+- **Before**: 328.1KB across 8 font files
+- **After**: 109.3KB across 8 font files
+- **Reduction**: 218KB saved (66.7%)
+
+### Docker Image Size
+
+- **Final production image**: 15MB
+- Includes Nginx, static files, and all assets
+
+## Key Features Showcase
+
+### Blog System
+
+The blog system includes several advanced features:
+
+**Giscus comments**: Self-hosted alternative to Disqus, powered by GitHub Discussions
+
+```svelte
+<Giscus
+	repo="antoniosarro/antoniosarro.dev"
+	repoId={PUBLIC_GISCUS_REPO_ID}
+	category="Announcements"
+	categoryId={PUBLIC_GISCUS_CATEGORY_ID}
+	theme={darkMode.value ? 'transparent_dark' : 'light'}
+/>
+```
+
+**RSS feed**: Automatically generated from blog posts
+
+```typescript
+export const GET: RequestHandler = async () => {
+	const posts = await getBlogs();
+	const recentPosts = posts.slice(0, 15);
+
+	const rssItems = recentPosts
+		.map(
+			(post) => `
+    <item>
+      <title>${escapeXml(post.frontmatter.title)}</title>
+      <link>${BASE_URL}/blogs/${post.slug}</link>
+      <description>${escapeXml(post.frontmatter.description)}</description>
+      <pubDate>${new Date(post.frontmatter.publishedAt).toUTCString()}</pubDate>
+    </item>
+  `
+		)
+		.join('\n');
+
+	return new Response(rssXml, {
+		headers: { 'Content-Type': 'application/xml' }
+	});
+};
+```
+
+**Table of contents**: Automatically extracted from headings
+
+```typescript
+export function getHeadings(source: string): ParsedHeading[] {
+	const headingMatches = source.match(/<h[1-6][^>]*>.*?<\/h[1-6]>/g);
+
+	return (
+		headingMatches?.map((headingHtml) => {
+			const parser = new DOMParser();
+			const doc = parser.parseFromString(headingHtml, 'text/html');
+			const element = doc.body.firstChild as Element;
+
+			return {
+				text: element.textContent,
+				id: element.id,
+				level: parseInt(element.tagName[1])
+			};
+		}) ?? []
+	);
+}
+```
+
+### Projects Section
+
+Projects are fetched from GitHub with type-safe validation:
+
+```typescript
+const repositoryPayloadSchema = z.object({
+	name: z.string(),
+	owner: z.object({
+		login: z.string(),
+		avatar_url: z.string()
+	}),
+	html_url: z.string(),
+	description: z
+		.string()
+		.nullish()
+		.transform((s) => s ?? ''),
+	stargazers_count: z.number(),
+	language: z
+		.string()
+		.nullish()
+		.transform((s) => s ?? ''),
+	forks_count: z.number(),
+	updated_at: z.string()
+});
+
+export function isRepositoryPayload(data: unknown): data is RepositoryPayloadSchema {
+	return repositoryPayloadSchema.safeParse(data).success;
+}
+```
+
+This ensures type safety at runtime, catching API changes before they cause problems.
+
+## Lessons Learned
+
+### What Worked Well
+
+**Static generation is perfect for content sites**: No amount of runtime optimization beats pre-rendered HTML.
+
+**Font optimization has massive ROI**: 66% size reduction with minimal effort. This should be standard practice.
+
+**Nix flakes are incredible**: True reproducibility without Docker bloat. Every developer gets the exact same environment.
+
+**Self-hosting as learning**: Setting up my own infrastructure taught me more than years of using managed platforms.
+
+### Challenges Overcome
+
+**MDX processing complexity**: Building a custom processor was harder than expected, but the control it gives is worth it.
+
+**Font subsetting automation**: Getting pyftsubset to run in Docker required some trial and error with Alpine packages.
+
+**Type safety with dynamic imports**: Ensuring type safety for dynamically imported blog posts required careful use of type guards.
+
+### Would Do Differently
+
+**Consider view transitions**: The web platform now has native view transitions. Adding these could make navigation feel even smoother.
+
+**Add search earlier**: I should have built search functionality from the start. Retrofitting it later will be more work.
+
+## Future Improvements
+
+Here's what's on the roadmap:
+
+- **Search functionality**: Full-text search across blog posts and projects
+- **View transitions**: Smooth page transitions using the View Transitions API
+- **Dark mode improvements**: Better color contrast and more theme options
+- **Fullsize code**: Ability to open the codeblock in a larger window
+
+## Conclusion
+
+Building this portfolio from scratch was significantly more work than using a template or managed platform. But the learning, performance, and control made it absolutely worth it.
+
+Key takeaways:
+
+- **Static generation beats runtime API calls** for content-focused sites
+- **Font optimization is the easiest performance win** you're probably missing
+- **Self-hosting teaches you things** managed platforms hide from you
+- **Nightly rebuilds** are a viable alternative to runtime data fetching
+- **SvelteKit's simplicity** makes it perfect for projects like this
+
+The entire source code is available on [GitHub](https://github.com/antoniosarro/antoniosarro.dev). Feel free to steal ideas, report issues, or contribute improvements!
+
+If you're building your own portfolio, I hope this article gave you some inspiration. And if you're using a managed platform, maybe this convinced you that building from scratch isn't as scary as it seems.
+
+Happy coding! 🚀

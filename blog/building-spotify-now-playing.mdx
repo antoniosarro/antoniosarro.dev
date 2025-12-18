@@ -1,0 +1,534 @@
+---
+title: 'Building the Perfect Spotify Now Playing Widget in SvelteKit'
+description: 'Elevate your music experience with a personalized Spotify Now Playing widget!'
+publishedAt: '2024-02-11'
+image: '/images/blogs/building-spotify-now-playing/thumbnail.avif'
+tags:
+  - SvelteKit
+  - Spotify
+  - Scss
+draft: false
+---
+
+<script>import {Highlight} from '$mdx/misc';</script>
+
+<div id="introduction">
+	You've likely encountered one of those cards or widgets displaying the most recent or current song
+	you're listening to. In this guide, I'll take you through the process step by step on how to build
+	it. We'll start by creating the app on Spotify, generating the necessary tokens, and then proceed
+	to implement the server-side API calls on SvelteKit. Additionally, we'll cover the creation of the
+	related frontend component that will utilize these API calls.
+</div>
+
+## Creating Spotify App
+
+To create the app on Spotify you can follow the following official [tutorial](https://developer.spotify.com/documentation/web-api/concepts/apps)
+
+<Highlight variant="warning" title="Be sure to do the following things">
+
+- Add the following address to the Redirect URIs
+  - `http://localhost:3000`
+- Copy and save
+  - `Client ID`
+  - `Client Secret`
+
+</Highlight>
+
+### Storing sensitive key in an .env file
+
+It's always a good practice to store keys for API calls or other sensitive information within an `.env` file,
+which you'll almost certainly add to the `.gitignore` to prevent any accidental leakage of data.
+
+Create and `.env` file in the root of the project and add to it your `CLIENT_ID` and `CLIENT_SECRET`.
+
+<Highlight variant="warning" title="Be sure to do the following things">
+
+Remember to prefix the variable name with <br/> `VITE_` otherwise they will not be exposed to the client,
+as you can read on the [documentation](https://vitejs.dev/guide/env-and-mode.html#env-files)
+
+</Highlight>
+
+```plaintext title=".env"
+VITE_SPOTIFY_CLIENT_ID=<clientid>
+VITE_SPOTIFY_CLIENT_SECRET=<clientsecret>
+```
+
+### Spotify Authorization Code Flow
+
+As you can see [here](https://developer.spotify.com/documentation/web-api/tutorials/code-flow),
+in order to gain access to the Spotify API, a very specific authorization flow must be followed.
+
+The basic steps are as follows.
+
+- Authorization Request to obtain the code
+- Use this access code to get the refresh token
+- Use the refresh token to get the access token
+- Use the access token to obtain API data
+
+## Requesting User Authorization
+
+To get the authorization code, we have to make a GET request to `https://accounts.spotify.com/authorize` using the following parameters:
+
+- `client_id`: that we have saved before
+- `response_type`: must be set to `code`
+- `redirect_uri`: `http://localhost:3000` (or another address that you set in the Redirect URIs)
+- `scope`: are used to determine which resources you have permissions to access
+  (you can find the full list [here](https://developer.spotify.com/documentation/web-api/concepts/scopes)),
+  and for our purpose we will use these:
+  - `user-read-currently-playing`
+  - `user-top-read`
+  - `user-read-recently-played`
+
+Since this step only needs to be done once, we'll simply compose the address as follows and enter it into a browser window.
+
+```plaintext title="Browser" /<clientid>/#ob
+https://accounts.spotify.com/authorize?client_id=<clientid>&response_type=code&redirect_uri=http%3A%2F%2Flocalhost:3000&scope=user-read-currently-playing%20user-top-read%20user-read-recently-played
+```
+
+Once executed it should redirect to a url similar to this one.
+
+```plaintext title="Browser" /code=code/#ob
+http://localhost:3000/?code=code
+```
+
+Get the code and saved because we will need it to get the refresh token.
+
+### Getting a Refresh Token
+
+Now the fastest way to get the refresh token is to make a POST request to the correct endpoint. You can use any software
+you want to do this but the fastest is [cURL](https://en.wikipedia.org/wiki/CURL).
+
+```bash showLineNumbers
+curl -H "Authorization: Basic <base64 encoded client_id:client_secret>" -d grant_type=authorization_code -d code=code -d redirect_uri=http%3A%2F%2Flocalhost:3000 https://accounts.spotify.com/api/token
+```
+
+Here we need to enter:
+
+- The code we saved earlier
+- A [Base64](https://en.wikipedia.org/wiki/Base64) encoded string given by the format `clientid:clientsecret`
+  - It can be created [here](https://www.base64encode.org)
+
+Once the address has been created and executed, simply copy and save in the .env file the refresh token.
+
+```plaintext title=".env"
+VITE_SPOTIFY_CLIENT_ID=<clientid>
+VITE_SPOTIFY_CLIENT_SECRET=<clientsecret>
+VITE_SPOTIFY_REFRESH_TOKEN=<refreshtoken>
+```
+
+### Getting an Access Token
+
+The advantage is that the refresh token never expires, allowing us to use it as many times as needed to obtain a new access token, which itself has a one-hour expiration time.
+
+Now let's create our endpoint `src > routes > api > spotify > accesstoken > +server.ts`
+
+```ts showLineNumbers
+const client_id = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
+const client_secret = import.meta.env.VITE_SPOTIFY_CLIENT_SECRET;
+const refresh_token = import.meta.env.VITE_SPOTIFY_REFRESH_TOKEN;
+
+const redirect_uri = 'http://localhost:5173/';
+const token_endpoint = `https://accounts.spotify.com/api/token`;
+
+const cacheToken = {
+	expires_in: 0,
+	access_token: ''
+};
+
+export async function GET() {
+	// Check if the token is expired and refresh it if necessary
+	if (cacheToken.expires_in < Date.now()) {
+		// Refresh the token
+		const tokenResponse: unknown = await fetch(token_endpoint, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded'
+			},
+			body: new URLSearchParams({
+				grant_type: 'refresh_token',
+				refresh_token,
+				redirect_uri,
+				client_id,
+				client_secret
+			})
+		}).then((res) => res.json());
+
+		// Handle invalid token response
+		if (!isTokensPayload(tokenResponse)) {
+			return new Response(JSON.stringify({ error: 'Invalid token' }));
+		}
+
+		// Update the cache with the new token and expiration time
+		cacheToken.access_token = tokenResponse.access_token;
+		cacheToken.expires_in = Date.now() + tokenResponse.expires_in * 1000;
+	}
+	return new Response(JSON.stringify({ access_token: cacheToken.access_token }));
+}
+```
+
+## Use the obtained access token to request to Spotify API
+
+Now that we have our access token, we can use it to make the API call to Spotify, and we can use it to get the now playing/last played song or
+top tracks from the user's account.
+
+### Now Playing / Last Played Endpoint
+
+Now let's create our endpoint `src > routes > api > spotify > nowplaying > +server.ts`
+
+```ts showLineNumbers
+const now_playing_endpoint = 'https://api.spotify.com/v1/me/player/currently-playing';
+const recently_played_endpoint = 'https://api.spotify.com/v1/me/player/recently-played';
+
+const cacheSong = {
+	track: {},
+	status: 'offline',
+	expires_in: 0
+};
+
+export async function GET() {
+	// Get the access token
+	const { access_token } = await get('/api/spotify/accesstoken');
+
+	// Check if the song cache is expired
+	if (cacheSong.expires_in < Date.now()) {
+		// Retrieve the current playing song
+		const currentPlayingResponse = await fetch(now_playing_endpoint, {
+			headers: {
+				Authorization: `Bearer ${access_token}`
+			}
+		});
+
+		// Process response for the current playing song
+		if (currentPlayingResponse.status === 200) {
+			const currentPlaying = await currentPlayingResponse.json();
+
+			// Update the cache with the current playing song
+			cacheSong = {
+				track: currentPlaying.item,
+				status: curretPlaying.is_playing ? 'online' : 'offline',
+				expires_in: Date.now() + (curretPlaying.is_playing ? 5 * 60 * 1000 : 2 * 60 * 1000)
+			};
+
+			return new Response(
+				JSON.stringify({
+					track: currentPlaying.item,
+					status: curretPlaying.is_playing ? 'online' : 'offline'
+				})
+			);
+		}
+
+		// If no current playing song, get the last played song
+		const recentlyPlayedResponse = await fetch(recently_played_endpoint, {
+			headers: {
+				Authorization: `Bearer ${access_token}`
+			}
+		});
+
+		// Process response for the last played song
+		if (recentlyPlayedResponse.status === 200) {
+			const recentlyPlayed = await recentlyPlayedResponse.json();
+
+			// Update the cache with the last played song
+			cacheSong = {
+				track: recentlyPlayed.items[0].track,
+				status: 'offline',
+				expires_in: Date.now() + 2 * 60 * 1000
+			};
+
+			return new Response(
+				JSON.stringify({
+					track: recentlyPlayed.items[0].track,
+					status: 'offline'
+				})
+			);
+		} else {
+			return new Response(
+				JSON.stringify({
+					track: cacheSong.track,
+					status: cacheSong.status
+				})
+			);
+		}
+	}
+}
+```
+
+### Top Tracks Endpoint
+
+Now let's create our endpoint `src > routes > api > spotify > toptracks > +server.ts`
+
+```ts showLineNumbers
+// toptracks/+server.ts
+const top_tracks_endpoint = 'https://api.spotify.com/v1/me/top/tracks';
+
+export async function GET() {
+	// Get the access token
+	const { access_token } = await get('/api/spotify/accesstoken');
+
+	// Retrieve the top tracks
+	const topTracksResponse = await fetch(top_tracks_endpoint, {
+		headers: {
+			Authorization: `Bearer ${access_token}`
+		}
+	});
+
+	// Process response for the top tracks
+	if (topTracksResponse.status === 200) {
+		const topTracks = await topTracksResponse.json();
+
+		return new Response(
+			JSON.stringify({
+				top_tracks: topTracks.items
+			})
+		);
+	}
+
+	return new Response(
+		JSON.stringify({
+			top_tracks: []
+		})
+	);
+}
+```
+
+## Creating Spotify Component
+
+Now that we have all the necessary endpoints, we can create our component.
+First, let's create a new file `src > components > spotify > NowPlaying.svelte`.
+This will be the component that will display the current playing song or the last played song.
+
+```svelte showLineNumbers
+<script lang="ts">
+  async function getRecentlyPlayed() {
+    const response = await fetch("/api/spotify/recentlyplayed");
+    const data = await response.json();
+    return data;
+  }
+</script>
+
+<div class="wrapper">
+  {#await getRecentlyPlayed()} // Add loading skeleton here {:then data}
+  <a
+    class="song"
+    href="{data.track.external_urls.spotify}"
+    target="_blank"
+    rel="noreferrer"
+  >
+    <div class="logo">// Add spotify logo here</div>
+    <div class="info">
+      <span class="label">
+        {#if data.status === 'online'}
+        <div>
+          <span class="label">
+            <span class="bar bar1"></span>
+            <span class="bar bar2"></span>
+            <span class="bar bar3"></span>
+          </span>
+          Now playing
+        </div>
+        {:else} Offline. Last played {/if}
+      </span>
+      <div class="scrolling-title">
+        <div class="title">
+          <span>{data.track.name}</span>
+          <span>{data.track.name}</span>
+          <span>{data.track.name}</span>
+          <span>{data.track.name}</span>
+          <span>{data.track.name}</span>
+        </div>
+      </div>
+      <p class="description">{data.track.artists[0].name}</p>
+    </div>
+    <div class="album">
+      <img
+        src="{data.track.album.images[0].url}"
+        alt="{data.track.album.name}"
+        width="640"
+        height="640"
+      />
+    </div>
+  </a>
+  {:catch}
+  <div class="wrapper">
+    <div class="error">
+      <div ="logo">// Add spotify error logo here</div>
+      <p>Something went wrong load Spotify data!</p>
+    </div>
+  </div>
+  {/await}
+</div>
+
+<style lang="scss">
+  .wrapper {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    padding: 2rem;
+    background-color: #212329;
+    background-position: center center;
+    background-size: cover;
+    border-radius: 2rem;
+    position: relative;
+    min-height: 10rem;
+    overflow: hidden;
+
+    .error {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      gap: 2rem;
+
+      .logo {
+        width: 50px;
+        height: 50px;
+      }
+
+      p {
+        font-size: 1.3rem;
+        text-align: center;
+      }
+    }
+
+    .song {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+
+      .logo {
+        width: 35px;
+        height: 35px;
+        margin-right: 20px;
+      }
+
+      .info {
+        position: relative;
+        z-index: 2;
+
+        .label {
+          color: #59cbc0;
+          display: flex;
+          justify-content: flex-start;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 1.2rem;
+
+          .barWrapper {
+            margin-right: 1rem;
+
+            .bar {
+              display: inline-block;
+              position: relative;
+              margin-right: 1px;
+              width: 3px;
+              height: 1px;
+              overflow: hidden;
+              background-color: #fd3912;
+              color: transparent;
+              animation-name: pulse;
+              animation-duration: 1s;
+              animation-iteration-count: infinite;
+              border-radius: 25%;
+
+              &1 {
+                animation-delay: 0.5s;
+              }
+
+              &3 {
+                animation-delay: 1.2s;
+              }
+            }
+          }
+        }
+
+        .scrolling-title {
+          display: flex;
+          overflow: hidden;
+          max-width: 150px;
+          white-space: nowrap;
+
+          .title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            animation: scroll 40s linear infinite;
+
+            span {
+              margin-right: 4rem;
+            }
+          }
+
+          div {
+            animation: scroll 10s linear infinite;
+          }
+
+          @keyframes scroll {
+            from {
+              transform: translate3d(0, 0, 0);
+            }
+
+            to {
+              transform: translate3d(-100%, 0, 0);
+            }
+          }
+        }
+
+        .description {
+          font-size: 1.5rem;
+          color: #ffffffcc;
+        }
+      }
+
+      .album {
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        max-width: 30%;
+        overflow: hidden;
+      }
+    }
+
+    &.hover .title {
+      color: #fd3912;
+    }
+  }
+
+  @keyframes pulse {
+    0% {
+      height: 1px;
+      margin-top: 0;
+    }
+
+    10% {
+      height: 15px;
+      margin-top: -15px;
+    }
+
+    50% {
+      height: 5px;
+      margin-top: -5px;
+    }
+
+    60% {
+      height: 7px;
+      margin-top: -7x;
+    }
+
+    80% {
+      height: 15px;
+      margin-top: -15px;
+    }
+
+    100% {
+      height: 1px;
+      margin-top: 0;
+    }
+  }
+</style>
+
+```
+
+This component mirrors the structure used on the Home page, omitting specific
+icons and styling elements such as media queries. However, these can be effortlessly
+incorporated as needed.

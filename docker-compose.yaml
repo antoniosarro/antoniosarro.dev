@@ -1,0 +1,27 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NODE_ENV: production
+        PUBLIC_UMAMI_WEBSITE_ID: ${PUBLIC_UMAMI_WEBSITE_ID:-}
+        PUBLIC_UMAMI_SERVER_REMOTE: ${PUBLIC_UMAMI_SERVER_REMOTE:-}
+        PUBLIC_GISCUS_REPO_ID: ${PUBLIC_GISCUS_REPO_ID:-}
+        PUBLIC_GISCUS_CATEGORY_ID: ${PUBLIC_GISCUS_CATEGORY_ID:-}
+        GITHUB_API_TOKEN: ${GITHUB_API_TOKEN:-}
+        COMMIT_SHA: ${COMMIT_SHA:-}
+    container_name: antoniosarro-dev
+    ports:
+      - '3000:8080'
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
