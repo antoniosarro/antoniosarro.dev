@@ -36,12 +36,10 @@
 	});
 
 	onDestroy(() => {
-		onDestroy(() => {
-			for (const component of mountedComponents) {
-				void unmount(component, { outro: true });
-			}
-			mountedComponents = [];
-		});
+		for (const component of mountedComponents) {
+			void unmount(component, { outro: true });
+		}
+		mountedComponents = [];
 	});
 
 	function replaceHeadings() {
