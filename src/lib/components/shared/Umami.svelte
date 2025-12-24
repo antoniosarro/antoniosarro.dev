@@ -4,9 +4,12 @@
 
 <script lang="ts">
 	import { dev } from '$app/environment';
+
 	import { status } from '$lib/stores/umami.svelte';
+
 	import type { WindowWithUmami } from '$lib/types/umami';
 	import type { Attachment } from 'svelte/attachments';
+
 	import { BROWSER } from 'esm-env';
 
 	interface Props {
@@ -17,9 +20,17 @@
 	let { websiteID, srcURL }: Props = $props();
 
 	const SCRIPT_ID = 'umami_analytics_script';
-	const INITIALIZABLE_STATES = [undefined, 'removed', 'error', 'mounted', 'loaded'] as const;
+	const INITIALIZABLE_STATES = [
+		undefined,
+		'removed',
+		'error',
+		'mounted',
+		'loaded'
+	] as const;
 
-	const shouldInitialize = $derived(!dev && INITIALIZABLE_STATES.includes(status.current));
+	const shouldInitialize = $derived(
+		!dev && INITIALIZABLE_STATES.includes(status.current)
+	);
 
 	function handleScriptLoad() {
 		status.set('loaded');
@@ -54,7 +65,6 @@
 			data-website-id={websiteID}
 			onload={handleScriptLoad}
 			onerror={handleScriptError}
-			{@attach scriptLifecycle}
-		></script>
+			{@attach scriptLifecycle}></script>
 	{/if}
 </svelte:head>

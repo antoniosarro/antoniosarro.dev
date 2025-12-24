@@ -13,11 +13,13 @@ draft: false
 <script>import {Highlight} from '$mdx/misc';</script>
 
 <div id="introduction">
-	You've likely encountered one of those cards or widgets displaying the most recent or current song
-	you're listening to. In this guide, I'll take you through the process step by step on how to build
-	it. We'll start by creating the app on Spotify, generating the necessary tokens, and then proceed
-	to implement the server-side API calls on SvelteKit. Additionally, we'll cover the creation of the
-	related frontend component that will utilize these API calls.
+	You've likely encountered one of those cards or widgets displaying the most
+	recent or current song you're listening to. In this guide, I'll take you
+	through the process step by step on how to build it. We'll start by creating
+	the app on Spotify, generating the necessary tokens, and then proceed to
+	implement the server-side API calls on SvelteKit. Additionally, we'll cover
+	the creation of the related frontend component that will utilize these API
+	calls.
 </div>
 
 ## Creating Spotify App
@@ -162,7 +164,9 @@ export async function GET() {
 		cacheToken.access_token = tokenResponse.access_token;
 		cacheToken.expires_in = Date.now() + tokenResponse.expires_in * 1000;
 	}
-	return new Response(JSON.stringify({ access_token: cacheToken.access_token }));
+	return new Response(
+		JSON.stringify({ access_token: cacheToken.access_token })
+	);
 }
 ```
 
@@ -176,8 +180,10 @@ top tracks from the user's account.
 Now let's create our endpoint `src > routes > api > spotify > nowplaying > +server.ts`
 
 ```ts showLineNumbers
-const now_playing_endpoint = 'https://api.spotify.com/v1/me/player/currently-playing';
-const recently_played_endpoint = 'https://api.spotify.com/v1/me/player/recently-played';
+const now_playing_endpoint =
+	'https://api.spotify.com/v1/me/player/currently-playing';
+const recently_played_endpoint =
+	'https://api.spotify.com/v1/me/player/recently-played';
 
 const cacheSong = {
 	track: {},
@@ -206,7 +212,9 @@ export async function GET() {
 			cacheSong = {
 				track: currentPlaying.item,
 				status: curretPlaying.is_playing ? 'online' : 'offline',
-				expires_in: Date.now() + (curretPlaying.is_playing ? 5 * 60 * 1000 : 2 * 60 * 1000)
+				expires_in:
+					Date.now() +
+					(curretPlaying.is_playing ? 5 * 60 * 1000 : 2 * 60 * 1000)
 			};
 
 			return new Response(

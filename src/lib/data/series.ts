@@ -9,7 +9,8 @@ export const seriesConfig: SeriesConfig[] = [
 	{
 		slug: 'homelab',
 		title: 'Homelab Adventures',
-		description: 'A complete guide to building and maintaining your own homelab infrastructure',
+		description:
+			'A complete guide to building and maintaining your own homelab infrastructure',
 		image: '/images/series/homelab.webp'
 	}
 ];

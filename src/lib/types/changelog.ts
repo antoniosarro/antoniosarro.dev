@@ -1,9 +1,15 @@
-export type ChangeType = 'added' | 'changed' | 'removed' | 'moved' | 'fixed' | 'security';
+export type ChangeType =
+	| 'added'
+	| 'changed'
+	| 'removed'
+	| 'moved'
+	| 'fixed'
+	| 'security';
 
 export interface ChangeItem {
 	type: ChangeType;
 	description: string;
-	component?: string;
+	components?: string[];
 	commitHash?: string;
 }
 

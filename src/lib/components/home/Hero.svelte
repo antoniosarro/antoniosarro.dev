@@ -22,18 +22,17 @@
 <div class="profile-container z-10 hidden xl:block">
 	<div
 		class="w-[22rem] min-w-[14rem] overflow-hidden rounded-[48px]"
-		style:transform="perspective(500px) {zoom ? 'scale(1.05)' : ''} rotateX({rotationX}deg) rotateY({rotationY}deg)"
+		style:transform="perspective(500px) {zoom ? 'scale(1.05)' : ''} rotateX({rotationX}deg)
+		rotateY({rotationY}deg)"
 		role="img"
 		aria-label="Profile picture"
 		onmousemove={onMouseEnter}
-		onmouseleave={onMouseLeave}
-	>
+		onmouseleave={onMouseLeave}>
 		<OptimizedImage
 			src="/images/misc/profile.webp"
 			alt="Antonio Sarro profile picture"
 			class="size-full object-cover"
-			eager={true}
-		/>
+			eager={true} />
 	</div>
 </div>
 

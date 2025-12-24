@@ -1,7 +1,10 @@
-import { projects } from '$lib/data/projects';
-import type { RepositoryInfo } from '$lib/types/github/types';
-import { fetchRepository } from './api';
 import { prerender } from '$app/server';
+
+import { projects } from '$lib/data/projects';
+
+import { fetchRepository } from './api';
+
+import type { RepositoryInfo } from '$lib/types/github/types';
 
 export const getGithubProjects = prerender(async () => {
 	const repos = (
@@ -14,9 +17,15 @@ export const getGithubProjects = prerender(async () => {
 
 	// Add hasArticle information
 	repos.forEach((repo) => {
-		const projectConfig = projects.find((p) => (typeof p === 'string' ? p : p.name) === repo.name);
-		repo.hasArticle = typeof projectConfig === 'object' ? projectConfig.hasArticle : false;
+		const projectConfig = projects.find(
+			(p) => (typeof p === 'string' ? p : p.name) === repo.name
+		);
+		repo.hasArticle =
+			typeof projectConfig === 'object' ? projectConfig.hasArticle : false;
 	});
 
-	return repos.sort((a, b) => new Date(b.lastUpdate).getTime() - new Date(a.lastUpdate).getTime());
+	return repos.sort(
+		(a, b) =>
+			new Date(b.lastUpdate).getTime() - new Date(a.lastUpdate).getTime()
+	);
 });

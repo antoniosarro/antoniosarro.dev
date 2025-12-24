@@ -1,9 +1,12 @@
 <script lang="ts">
 	import { MetaTags } from 'svelte-meta-tags';
+
 	import { page } from '$app/state';
+
 	import { type Route, routes } from '$lib/data/routes';
-	import type { Frontmatter } from '$lib/types/blog';
+
 	import type { Pathname } from '$app/types';
+	import type { Frontmatter } from '$lib/types/blog';
 
 	interface Props {
 		frontmatter?: Frontmatter;
@@ -24,7 +27,7 @@
 		description: '',
 		url: BASE_URL,
 		image: '',
-		icon: '',
+		icon: null,
 		twitter: {
 			creator: TWITTER_HANDLE,
 			handle: TWITTER_HANDLE,
@@ -34,7 +37,11 @@
 		}
 	};
 
-	function createBlogMeta(frontmatter: Frontmatter, slug: string, pathname: string): Route {
+	function createBlogMeta(
+		frontmatter: Frontmatter,
+		slug: string,
+		pathname: string
+	): Route {
 		return {
 			title: frontmatter.title,
 			nav: frontmatter.title,
@@ -43,7 +50,7 @@
 			description: frontmatter.description,
 			url: `${BASE_URL}/blogs/${slug}`,
 			image: frontmatter.image || '',
-			icon: 'lets-icons:book',
+			icon: null,
 			twitter: {
 				creator: TWITTER_HANDLE,
 				handle: TWITTER_HANDLE,
@@ -107,5 +114,4 @@
 		description: currentMeta.description,
 		image: ogImage.url,
 		imageAlt: ogImage.alt
-	}}
-/>
+	}} />

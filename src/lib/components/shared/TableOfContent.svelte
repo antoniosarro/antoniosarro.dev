@@ -36,11 +36,16 @@
 
 <h3 class="mb-4 text-xl font-semibold tracking-tight">Table of Contents</h3>
 <nav>
-	<a href="#introduction" class="link H2" class:active={activeID === 'introduction'}>
+	<a
+		href="#introduction"
+		class="link H2"
+		class:active={activeID === 'introduction'}>
 		Introduction
 	</a>
-	{#each contents ?? [] as { text, id, level }}
-		<a class="link H{level}" class:active={activeID === id} href="#{id}">{text}</a>
+	{#each contents ?? [] as { text, id, level }, i (i)}
+		<a class="link H{level}" class:active={activeID === id} href="#{id}">
+			{text}
+		</a>
 	{/each}
 </nav>
 
@@ -51,7 +56,7 @@
 		@apply block opacity-60 transition-all duration-300 hover:opacity-100;
 
 		&.active {
-			@apply font-semibold text-primary opacity-100;
+			@apply text-primary font-semibold opacity-100;
 		}
 
 		&.H2 {

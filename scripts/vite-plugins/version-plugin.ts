@@ -1,7 +1,8 @@
+import type { Plugin } from 'vite';
+
 import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
-import type { Plugin } from 'vite';
 
 interface VersionInfo {
 	version: string;

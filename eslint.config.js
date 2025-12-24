@@ -1,39 +1,60 @@
-import prettier from 'eslint-config-prettier';
-import { fileURLToPath } from 'node:url';
-import { includeIgnoreFile } from '@eslint/compat';
+import svelteParser from 'svelte-eslint-parser';
+
 import js from '@eslint/js';
-import svelte from 'eslint-plugin-svelte';
-import { defineConfig } from 'eslint/config';
+import eslintConfigPrettier from 'eslint-config-prettier';
+import simpleImportSort from 'eslint-plugin-simple-import-sort';
+import eslintPluginSvelte from 'eslint-plugin-svelte';
 import globals from 'globals';
-import ts from 'typescript-eslint';
-import svelteConfig from './svelte.config.js';
+import tsEslint from 'typescript-eslint';
 
-const gitignorePath = fileURLToPath(new URL('./.gitignore', import.meta.url));
-
-export default defineConfig(
-	includeIgnoreFile(gitignorePath),
-	{
-		ignores: ['build/**', '.svelte-kit/**', 'node_modules/**', 'static/**', '*.min.js']
-	},
+export default tsEslint.config(
 	js.configs.recommended,
-	...ts.configs.recommendedTypeChecked,
-	...svelte.configs.recommended,
-	prettier,
-	...svelte.configs.prettier,
+	...tsEslint.configs.recommendedTypeChecked,
+
+	// Import sorting
 	{
+		plugins: {
+			'simple-import-sort': simpleImportSort
+		},
+		rules: {
+			'simple-import-sort/imports': [
+				'error',
+				{
+					groups: [
+						// Side effect imports
+						['^\\u0000'],
+						// Svelte and framework imports
+						['^svelte', '^@sveltejs'],
+						// Icon imports
+						['^~icons/'],
+						// $app and $env imports
+						['^\\$app', '^\\$env'],
+						// $lib imports
+						['^\\$lib'],
+						// Parent imports
+						['^\\.\\.'],
+						// Current directory imports
+						['^\\.'],
+						// Type imports
+						['^.*\\u0000$']
+					]
+				}
+			],
+			'simple-import-sort/exports': 'error'
+		}
+	},
+
+	// TypeScript files
+	{
+		files: ['**/*.ts'],
 		languageOptions: {
-			globals: { ...globals.browser, ...globals.node },
+			parser: tsEslint.parser,
 			parserOptions: {
-				projectService: true,
-				tsconfigRootDir: fileURLToPath(new URL('.', import.meta.url))
+				project: true,
+				tsconfigRootDir: import.meta.dirname
 			}
 		},
 		rules: {
-			'no-undef': 'off',
-			'no-console': ['warn', { allow: ['warn', 'error'] }],
-			'prefer-const': 'error',
-			'no-var': 'error',
-			eqeqeq: ['error', 'always', { null: 'ignore' }],
 			'@typescript-eslint/no-unused-vars': [
 				'error',
 				{
@@ -44,42 +65,106 @@ export default defineConfig(
 			],
 			'@typescript-eslint/consistent-type-imports': [
 				'error',
-				{ prefer: 'type-imports', fixStyle: 'inline-type-imports' }
+				{
+					prefer: 'type-imports',
+					fixStyle: 'inline-type-imports'
+				}
 			],
-			'@typescript-eslint/no-import-type-side-effects': 'error',
-			'@typescript-eslint/no-explicit-any': 'warn',
-			'@typescript-eslint/no-floating-promises': 'error',
-			'@typescript-eslint/await-thenable': 'error'
+			'@typescript-eslint/no-import-type-side-effects': 'error'
+		}
+	},
+
+	// JavaScript config files
+	{
+		files: ['**/*.js', '**/*.cjs', '**/*.mjs', '**/*.config.ts'],
+		...tsEslint.configs.disableTypeChecked
+	},
+
+	// Svelte files
+	...eslintPluginSvelte.configs['flat/recommended'],
+	...eslintPluginSvelte.configs['flat/prettier'],
+	{
+		name: 'svelte',
+		files: ['**/*.svelte', '**/*.svelte.*'],
+		// ...,
+		rules: {
+			// @see https://github.com/sveltejs/eslint-plugin-svelte/issues/1353
+			'svelte/no-navigation-without-resolve': 'off'
+			// ...,
 		}
 	},
 	{
-		files: ['**/*.svelte', '**/*.svelte.ts', '**/*.svelte.js'],
+		files: ['**/*.svelte'],
 		languageOptions: {
+			globals: {
+				...globals.browser
+			},
+			ecmaVersion: 2024,
+			sourceType: 'module',
+			parser: svelteParser,
 			parserOptions: {
-				projectService: true,
+				parser: tsEslint.parser,
 				extraFileExtensions: ['.svelte'],
-				parser: ts.parser,
-				svelteConfig
+				project: ['tsconfig.json', '.svelte-kit/tsconfig.json'],
+				tsconfigRootDir: import.meta.dirname
 			}
 		},
 		rules: {
-			'svelte/no-at-html-tags': 'off',
-			'svelte/valid-compile': ['error', { ignoreWarnings: false }],
-			'svelte/no-unused-svelte-ignore': 'error',
-			'svelte/spaced-html-comment': 'error',
-			'svelte/no-reactive-reassign': 'warn'
+			// Svelte 5 specific rules
+			'@typescript-eslint/no-unused-vars': [
+				'error',
+				{
+					varsIgnorePattern: '^\\$\\$(Props|Events|Slots|Generic)|^_',
+					argsIgnorePattern: '^_'
+				}
+			],
+			// Accessibility
+			'svelte/valid-compile': 'error',
+			'svelte/no-at-html-tags': 'warn',
+			'svelte/require-each-key': 'error',
+			'svelte/no-reactive-reassign': 'error',
+			// Svelte 5 runes
+			'svelte/valid-prop-names-in-kit-pages': 'error',
+			// No unused $state, $derived, etc.
+			'svelte/no-unused-svelte-ignore': 'error'
 		}
 	},
+
+	// Server-side files
 	{
-		files: ['scripts/**/*.ts', 'scripts/**/*.mjs'],
-		rules: {
-			'no-console': 'off'
+		files: ['**/*.server.ts', '**/*.server.js', '**/+server.ts'],
+		languageOptions: {
+			globals: {
+				...globals.node
+			}
 		}
 	},
+
+	// Test files
 	{
-		files: ['**/*.config.js', '**/*.config.ts'],
+		files: ['tests/**/*.ts', '**/*.test.ts', '**/*.spec.ts'],
 		rules: {
-			'@typescript-eslint/no-require-imports': 'off'
+			'no-empty-pattern': ['error', { allowObjectPatternsAsParameters: true }],
+			'@typescript-eslint/no-explicit-any': 'off'
 		}
-	}
+	},
+
+	// Ignores
+	{
+		ignores: [
+			'.svelte-kit',
+			'.vercel',
+			'.github',
+			'.storybook',
+			'.vscode',
+			'build',
+			'static',
+			'package',
+			'coverage',
+			'node_modules',
+			'scripts/**/*.mjs' // Generated scripts
+		]
+	},
+
+	eslintConfigPrettier
 );

@@ -6,6 +6,29 @@ All notable changes to antoniosarro.dev are documented here. Check it out at ant
 
 <!--CHANGELOG_ENTRY_START-->
 
+## [1.0.1] - 2025-12-24
+
+@@title:Holiday Effects & Improvements@@
+
+Minor release with seasonal visual effects and code quality improvements.
+
+### ::added::
+- **Christmas snow effect component for holiday period**
+  ``src/lib/components/shared/effects/Snow.svelte``
+- **Fireworks effect component for New Year's Day**
+  ``src/lib/components/shared/effects/Fireworks.svelte``
+- **Custom Giscus component with store and types**
+  ``src/lib/components/shared/Giscus.svelte``
+  ``src/lib/stores/giscus.svelte.ts``
+  ``src/lib/types/giscus.ts``
+
+### ::fixed::
+- **Overall codebase linting and formatting fixes**
+
+<!--CHANGELOG_ENTRY_END-->
+
+<!--CHANGELOG_ENTRY_START-->
+
 ## [1.0.0] - 2025-12-18
 
 @@title:Stable Release@@

@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Search from '~icons/solar/magnifer-linear';
 	import Close from '~icons/radix-icons/cross-2';
+	import Search from '~icons/solar/magnifer-linear';
 	import Loader from '~icons/svg-spinners/ring-resize';
 
 	import { getBlogFilterState } from '$lib/stores/blog.svelte';
@@ -47,11 +47,12 @@
 </script>
 
 <div class="relative w-full">
-	<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+	<div
+		class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
 		{#if isSearching}
-			<Loader class="size-5 text-primary" />
+			<Loader class="text-primary size-5" />
 		{:else}
-			<Search class="size-5 text-accent" />
+			<Search class="text-accent size-5" />
 		{/if}
 	</div>
 	<input
@@ -61,14 +62,12 @@
 		onkeydown={handleKeydown}
 		type="text"
 		placeholder="Search articles by title, description, or tags..."
-		class="w-full rounded-lg border border-elevation-one bg-background py-3 pr-10 pl-10 text-foreground placeholder:text-accent/60 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
-	/>
+		class="border-elevation-one bg-background text-foreground placeholder:text-accent/60 focus:border-primary focus:ring-primary w-full rounded-lg border py-3 pr-10 pl-10 focus:ring-1 focus:outline-none" />
 	{#if localValue.length > 0}
 		<button
 			onclick={handleClear}
-			class="absolute inset-y-0 right-0 flex items-center pr-3 text-accent duration-200 hover:text-primary"
-			aria-label="Clear search"
-		>
+			class="text-accent hover:text-primary absolute inset-y-0 right-0 flex items-center pr-3 duration-200"
+			aria-label="Clear search">
 			<Close class="size-5" />
 		</button>
 	{/if}

@@ -1,6 +1,8 @@
 import { env } from '$env/dynamic/private';
-import type { RepositoryInfo } from '$lib/types/github/types';
+
 import { isRepositoryPayload } from '$lib/types/github/validator';
+
+import type { RepositoryInfo } from '$lib/types/github/types';
 
 async function fetchWithRetry(
 	url: string,
@@ -36,18 +38,25 @@ async function fetchWithRetry(
 	throw lastError!;
 }
 
-export async function fetchRepository(name: string): Promise<RepositoryInfo | undefined> {
+export async function fetchRepository(
+	name: string
+): Promise<RepositoryInfo | undefined> {
 	try {
-		const response = await fetchWithRetry(`https://api.github.com/repos/antoniosarro/${name}`, {
-			headers: {
-				Authorization: `Bearer ${env.GITHUB_API_TOKEN}`,
-				Accept: 'application/vnd.github+json',
-				'X-Github-Api-Version': '2022-11-28'
+		const response = await fetchWithRetry(
+			`https://api.github.com/repos/antoniosarro/${name}`,
+			{
+				headers: {
+					Authorization: `Bearer ${env.GITHUB_API_TOKEN}`,
+					Accept: 'application/vnd.github+json',
+					'X-Github-Api-Version': '2022-11-28'
+				}
 			}
-		});
+		);
 
 		if (!response.ok) {
-			console.error(`Failed to fetch ${name} repository. Status: ${response.status}`);
+			console.error(
+				`Failed to fetch ${name} repository. Status: ${response.status}`
+			);
 			return undefined;
 		}
 

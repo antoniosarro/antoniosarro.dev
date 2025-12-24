@@ -1,6 +1,5 @@
 import { execSync } from 'child_process';
 import fs from 'fs';
-import path from 'path';
 
 // ============================================
 // Types
@@ -107,7 +106,12 @@ export const logger = {
 		console.log(`${COLORS.bright}${message}${COLORS.reset}`);
 	},
 
-	stats(file: string, originalKB: string, optimizedKB: string, reduction: number): void {
+	stats(
+		file: string,
+		originalKB: string,
+		optimizedKB: string,
+		reduction: number
+	): void {
 		console.log(
 			`  ${COLORS.green}✔${COLORS.reset} ${file}: ${originalKB}KB → ${optimizedKB}KB ${COLORS.green}(${reduction}% reduction)${COLORS.reset}`
 		);

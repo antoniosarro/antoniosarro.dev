@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type { Blog as BlogType } from '$lib/types/blog';
-
 	import BlogCard from './BlogCard.svelte';
 	import BlogSkeleton from './BlogSkeleton.svelte';
+
+	import type { Blog as BlogType } from '$lib/types/blog';
 
 	interface Props {
 		data?: BlogType[];

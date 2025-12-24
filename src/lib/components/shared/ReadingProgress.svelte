@@ -3,7 +3,8 @@
 
 	function updateProgress() {
 		const scrollTop = window.scrollY;
-		const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+		const docHeight =
+			document.documentElement.scrollHeight - window.innerHeight;
 		progress = docHeight > 0 ? Math.min((scrollTop / docHeight) * 100, 100) : 0;
 	}
 
@@ -20,11 +21,11 @@
 </script>
 
 <div
-	class="fixed top-0 left-0 z-50 h-1 bg-primary transition-all duration-150 ease-out"
+	class="bg-primary fixed top-0 left-0 z-50 h-1 transition-all duration-150 ease-out"
 	style="width: {progress}%"
 	role="progressbar"
 	aria-valuenow={Math.round(progress)}
 	aria-valuemin={0}
 	aria-valuemax={100}
-	aria-label="Reading progress"
-></div>
+	aria-label="Reading progress">
+</div>

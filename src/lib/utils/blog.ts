@@ -1,4 +1,5 @@
 import { seriesConfig } from '$lib/data/series';
+
 import type { Blog, Frontmatter, Series } from '$lib/types/blog';
 
 /**
@@ -125,7 +126,10 @@ export function groupBlogsBySeries(blogs: Blog[]): Map<string, Blog[]> {
 	seriesMap.forEach((posts, slug) => {
 		seriesMap.set(
 			slug,
-			posts.sort((a, b) => (a.frontmatter.seriesOrder || 0) - (b.frontmatter.seriesOrder || 0))
+			posts.sort(
+				(a, b) =>
+					(a.frontmatter.seriesOrder || 0) - (b.frontmatter.seriesOrder || 0)
+			)
 		);
 	});
 
@@ -188,13 +192,17 @@ export function filterBlogs(
 			(blog) =>
 				blog.frontmatter.title.toLowerCase().includes(searchLower) ||
 				blog.frontmatter.description.toLowerCase().includes(searchLower) ||
-				blog.frontmatter.tags.some((tag) => tag.toLowerCase().includes(searchLower))
+				blog.frontmatter.tags.some((tag) =>
+					tag.toLowerCase().includes(searchLower)
+				)
 		);
 	}
 
 	// Filter by tags
 	if (tags.length > 0) {
-		filtered = filtered.filter((blog) => tags.every((tag) => blog.frontmatter.tags.includes(tag)));
+		filtered = filtered.filter((blog) =>
+			tags.every((tag) => blog.frontmatter.tags.includes(tag))
+		);
 	}
 
 	return filtered;
@@ -228,7 +236,9 @@ export function getRelatedPosts(
 	const scoredPosts = allBlogs
 		.filter((blog) => blog.slug !== currentSlug)
 		.map((blog) => {
-			const sharedTags = blog.frontmatter.tags.filter((tag) => currentTags.includes(tag));
+			const sharedTags = blog.frontmatter.tags.filter((tag) =>
+				currentTags.includes(tag)
+			);
 			return {
 				blog,
 				score: sharedTags.length

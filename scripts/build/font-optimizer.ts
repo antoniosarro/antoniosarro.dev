@@ -1,15 +1,16 @@
-import path from 'path';
 import fs from 'fs';
 import { glob } from 'glob';
+import path from 'path';
+
 import {
-	type FontFamily,
-	type OptimizationResult,
-	type FontStats,
-	PATHS,
-	FONT_FAMILIES,
-	logger,
+	execUtils,
 	fileUtils,
-	execUtils
+	FONT_FAMILIES,
+	type FontFamily,
+	type FontStats,
+	logger,
+	type OptimizationResult,
+	PATHS
 } from './utils';
 
 export class FontOptimizer {
@@ -31,7 +32,9 @@ export class FontOptimizer {
 		}
 	}
 
-	async optimizeFonts(fontFamilies: FontFamily[] = FONT_FAMILIES): Promise<FontStats> {
+	async optimizeFonts(
+		fontFamilies: FontFamily[] = FONT_FAMILIES
+	): Promise<FontStats> {
 		logger.header('🔤 Starting font optimization with pyftsubset...');
 
 		fileUtils.ensureDirectoryExists(this.optimizedDir);
@@ -42,7 +45,7 @@ export class FontOptimizer {
 		for (const fontFamily of fontFamilies) {
 			logger.subheader(`📁 Processing ${fontFamily.name} fonts...`);
 
-			const results = await this.optimizeFontFamily(fontFamily, unicodes);
+			const results = this.optimizeFontFamily(fontFamily, unicodes);
 			allResults.push(...results);
 		}
 
@@ -58,7 +61,9 @@ export class FontOptimizer {
 		});
 
 		if (htmlFiles.length === 0) {
-			throw new Error('No HTML files found in build directory. Run `pnpm run build` first.');
+			throw new Error(
+				'No HTML files found in build directory. Run `pnpm run build` first.'
+			);
 		}
 
 		logger.info(`Analyzing ${htmlFiles.length} HTML files`);
@@ -84,7 +89,10 @@ export class FontOptimizer {
 		}
 
 		const unicodes = Array.from(allChars)
-			.map((char) => `U+${char.charCodeAt(0).toString(16).toUpperCase().padStart(4, '0')}`)
+			.map(
+				(char) =>
+					`U+${char.charCodeAt(0).toString(16).toUpperCase().padStart(4, '0')}`
+			)
 			.join(',');
 
 		logger.success(`Extracted ${allChars.size} unique characters`);
@@ -92,10 +100,10 @@ export class FontOptimizer {
 		return unicodes;
 	}
 
-	private async optimizeFontFamily(
+	private optimizeFontFamily(
 		fontFamily: FontFamily,
 		unicodes: string
-	): Promise<OptimizationResult[]> {
+	): OptimizationResult[] {
 		const fontDir = path.join(this.fontsDir, fontFamily.name);
 		const optimizedDir = path.join(this.optimizedDir, fontFamily.name);
 
@@ -104,7 +112,12 @@ export class FontOptimizer {
 		const results: OptimizationResult[] = [];
 
 		for (const fontFile of fontFamily.files) {
-			const result = await this.optimizeFont(fontFile, fontDir, optimizedDir, unicodes);
+			const result = this.optimizeFont(
+				fontFile,
+				fontDir,
+				optimizedDir,
+				unicodes
+			);
 			results.push(result);
 			this.logResult(result);
 		}
@@ -112,12 +125,12 @@ export class FontOptimizer {
 		return results;
 	}
 
-	private async optimizeFont(
+	private optimizeFont(
 		fontFile: string,
 		inputDir: string,
 		outputDir: string,
 		unicodes: string
-	): Promise<OptimizationResult> {
+	): OptimizationResult {
 		const inputPath = path.join(inputDir, fontFile);
 		const outputPath = path.join(outputDir, fontFile);
 
@@ -137,7 +150,10 @@ export class FontOptimizer {
 			);
 
 			const optimizedSize = fileUtils.getFileSize(outputPath);
-			const reduction = fileUtils.calculateReduction(originalSize, optimizedSize);
+			const reduction = fileUtils.calculateReduction(
+				originalSize,
+				optimizedSize
+			);
 
 			return {
 				file: fontFile,
@@ -147,7 +163,8 @@ export class FontOptimizer {
 				success: true
 			};
 		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+			const errorMessage =
+				error instanceof Error ? error.message : 'Unknown error';
 			logger.error(`Failed to optimize ${fontFile}: ${errorMessage}`);
 
 			return {
@@ -172,9 +189,18 @@ export class FontOptimizer {
 	private calculateStats(results: OptimizationResult[]): FontStats {
 		const successfulResults = results.filter((r) => r.success);
 
-		const totalOriginalSize = successfulResults.reduce((sum, r) => sum + r.originalSize, 0);
-		const totalOptimizedSize = successfulResults.reduce((sum, r) => sum + r.optimizedSize, 0);
-		const totalReduction = fileUtils.calculateReduction(totalOriginalSize, totalOptimizedSize);
+		const totalOriginalSize = successfulResults.reduce(
+			(sum, r) => sum + r.originalSize,
+			0
+		);
+		const totalOptimizedSize = successfulResults.reduce(
+			(sum, r) => sum + r.optimizedSize,
+			0
+		);
+		const totalReduction = fileUtils.calculateReduction(
+			totalOriginalSize,
+			totalOptimizedSize
+		);
 
 		return {
 			totalOriginalSize,

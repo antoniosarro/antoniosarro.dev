@@ -9,17 +9,17 @@
 </script>
 
 <div
-	class="flex flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-elevation-one py-16 text-center"
->
-	<SearchOff class="size-16 text-accent/40" />
+	class="border-elevation-one flex flex-col items-center justify-center gap-4 rounded-lg border border-dashed py-16 text-center">
+	<SearchOff class="text-accent/40 size-16" />
 	<div class="flex flex-col gap-1">
-		<h3 class="font-incognito text-xl font-semibold text-foreground">No articles found</h3>
+		<h3 class="font-incognito text-foreground text-xl font-semibold">
+			No articles found
+		</h3>
 		<p class="text-accent">Try adjusting your search or filter criteria</p>
 	</div>
 	<button
 		onclick={onClear}
-		class="rounded-lg border border-primary bg-primary/10 px-4 py-2 text-sm font-medium text-primary duration-200 hover:bg-primary hover:text-background"
-	>
+		class="border-primary bg-primary/10 text-primary hover:bg-primary hover:text-background rounded-lg border px-4 py-2 text-sm font-medium duration-200">
 		Clear all filters
 	</button>
 </div>

@@ -1,8 +1,20 @@
-import type { Changelog, ChangelogEntry, ChangeItem, ChangeType } from '$lib/types/changelog';
-
 import changelogRaw from '../../../../CHANGELOG.md?raw';
 
-const VALID_TYPES: ChangeType[] = ['added', 'changed', 'removed', 'moved', 'fixed', 'security'];
+import type {
+	ChangeItem,
+	Changelog,
+	ChangelogEntry,
+	ChangeType
+} from '$lib/types/changelog';
+
+const VALID_TYPES: ChangeType[] = [
+	'added',
+	'changed',
+	'removed',
+	'moved',
+	'fixed',
+	'security'
+];
 
 function isValidChangeType(type: string): type is ChangeType {
 	return VALID_TYPES.includes(type as ChangeType);
@@ -14,7 +26,8 @@ function isValidChangeType(type: string): type is ChangeType {
 function parseChangelog(markdown: string): Changelog {
 	const entries: ChangelogEntry[] = [];
 
-	const entryRegex = /<!--CHANGELOG_ENTRY_START-->([\s\S]*?)<!--CHANGELOG_ENTRY_END-->/g;
+	const entryRegex =
+		/<!--CHANGELOG_ENTRY_START-->([\s\S]*?)<!--CHANGELOG_ENTRY_END-->/g;
 	let match;
 
 	while ((match = entryRegex.exec(markdown)) !== null) {
@@ -35,7 +48,9 @@ function parseEntry(content: string): ChangelogEntry | null {
 	const lines = content.split('\n');
 
 	// Parse version and date: ## [1.0.0] - 2025-12-16
-	const versionMatch = lines[0]?.match(/^##\s*\[([^\]]+)\]\s*-\s*(\d{4}-\d{2}-\d{2})/);
+	const versionMatch = lines[0]?.match(
+		/^##\s*\[([^\]]+)\]\s*-\s*(\d{4}-\d{2}-\d{2})/
+	);
 	if (!versionMatch) {
 		return null;
 	}
@@ -61,7 +76,8 @@ function parseEntry(content: string): ChangelogEntry | null {
 
 	// Parse change sections
 	const changes: ChangeItem[] = [];
-	const sectionRegex = /### ::(\w+)::\n([\s\S]*?)(?=### ::|<!--CHANGELOG_ENTRY_END-->|$)/g;
+	const sectionRegex =
+		/### ::(\w+)::\n([\s\S]*?)(?=### ::|<!--CHANGELOG_ENTRY_END-->|$)/g;
 	let sectionMatch;
 
 	while ((sectionMatch = sectionRegex.exec(content)) !== null) {
@@ -72,21 +88,31 @@ function parseEntry(content: string): ChangelogEntry | null {
 			continue;
 		}
 
-		// Parse individual changes with hash
-		// Format: - **description** @@hash:abc1234@@\n  ``component``
-		const changeRegex = /-\s*\*\*(.+?)\*\*\s*@@hash:([a-f0-9]+)@@(?:\n\s*``([^`]+)``)?/g;
+		// Parse individual changes with optional hash and multiple components
+		// Format: - **description** @@hash:abc1234@@\n  ``component1``\n  ``component2``
+		const changeRegex =
+			/-\s*\*\*(.+?)\*\*(?:\s*@@hash:([a-f0-9]+)@@)?((?:\n\s*``[^`]+``)*)/g;
 		let changeMatch;
 
 		while ((changeMatch = changeRegex.exec(sectionContent)) !== null) {
 			const changeDescription = changeMatch[1].trim();
-			const changeHash = changeMatch[2].trim();
-			const component = changeMatch[3]?.trim();
+			const changeHash = changeMatch[2]?.trim();
+			const componentsBlock = changeMatch[3] || '';
+
+			// Extract all components from the block
+			const componentRegex = /``([^`]+)``/g;
+			const components: string[] = [];
+			let componentMatch;
+
+			while ((componentMatch = componentRegex.exec(componentsBlock)) !== null) {
+				components.push(componentMatch[1].trim());
+			}
 
 			changes.push({
 				type,
 				description: changeDescription,
-				commitHash: changeHash,
-				...(component && { component })
+				...(changeHash && { commitHash: changeHash }),
+				...(components.length && { components: components }),
 			});
 		}
 	}

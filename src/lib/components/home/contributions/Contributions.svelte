@@ -1,7 +1,9 @@
 <script lang="ts">
-	import type { Result } from '$lib/types/github/contributions';
 	import { getGitHubYears } from '$lib/utils/date';
+
 	import Calendar from './Calendar.svelte';
+
+	import type { Result } from '$lib/types/github/contributions';
 
 	let years = getGitHubYears(2024);
 	let selectedYear = $state(years[0]);
@@ -16,7 +18,8 @@
 </script>
 
 <div class="flex flex-col gap-4 xl:flex-row">
-	<div class="max-h-fit max-w-fit rounded-lg border border-elevation-one p-4 md:p-6 lg:p-8">
+	<div
+		class="border-elevation-one max-h-fit max-w-fit rounded-lg border p-4 md:p-6 lg:p-8">
 		<Calendar data={data[selectedYear]} year={selectedYear} />
 	</div>
 	<div class="flex flex-row flex-wrap justify-start gap-2 xl:flex-col">
@@ -24,11 +27,10 @@
 			<button
 				class="rounded-lg border px-4 py-2 text-center text-sm font-medium duration-300 {year ===
 				selectedYear
-					? 'text border-transparent bg-primary text-background'
+					? 'text bg-primary text-background border-transparent'
 					: 'border-elevation-one hover:border-primary'}"
 				onclick={() => (selectedYear = year)}
-				title={`View Graph for the year ${year}`}
-			>
+				title={`View Graph for the year ${year}`}>
 				{year}
 			</button>
 		{/each}

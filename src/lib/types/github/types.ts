@@ -1,6 +1,5 @@
-import { z } from 'zod';
-
 import type { repositoryPayloadSchema } from './schema';
+import type { z } from 'zod';
 
 export type RepositoryPayloadSchema = z.infer<typeof repositoryPayloadSchema>;
 

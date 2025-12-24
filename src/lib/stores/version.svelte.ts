@@ -1,10 +1,3 @@
-interface VersionInfo {
-	version: string;
-	commitHash: string;
-	commitHashShort: string;
-	buildDate: string;
-}
-
 class VersionStore {
 	readonly version: string = __APP_VERSION__;
 	readonly commitHash: string = __COMMIT_HASH__;

@@ -22,11 +22,10 @@
 <svelte:window
 	onmousemove={onMouseMove}
 	onmousedown={() => (scale = 1.5)}
-	onmouseup={() => (scale = 1)}
-/>
+	onmouseup={() => (scale = 1)} />
 
 <div
-	class="pointer-events-none fixed top-0 left-0 z-30 size-7 rounded-full border border-primary transition-all duration-300 ease-out"
+	class="border-primary pointer-events-none fixed top-0 left-0 z-30 size-7 rounded-full border transition-all duration-300 ease-out"
 	style:transform="{cursorStyle} scale({scale})"
-	style:opacity
-></div>
+	style:opacity>
+</div>

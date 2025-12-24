@@ -1,4 +1,5 @@
 import { getBlogs } from '$lib/services/blog/index.remote';
+
 import type { RequestHandler } from './$types';
 
 export const prerender = true;

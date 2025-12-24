@@ -1,5 +1,3 @@
-import { getStoredValue, setStoredValue } from '$lib/utils/localstorage';
-
 type UmamiStatus = 'mounted' | 'removed' | 'loaded' | 'error' | undefined;
 
 class UmamiStatusStore {

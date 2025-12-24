@@ -30,10 +30,37 @@
 	--color-elevation-one: var(--elevation-one);
 
 	--font-sans:
-		'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-		'Segoe UI Symbol', 'Noto Color Emoji';
+		'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+		'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
 	--font-incognito: 'Incognito', 'Inter', sans-serif;
+
+	--animate-fall: fall linear infinite;
+	--animate-firework-burst: firework-burst 1.5s ease-out forwards;
+
+	@keyframes fall {
+		0% {
+			transform: translateY(0) rotate(0deg);
+		}
+		100% {
+			transform: translateY(100vh) rotate(360deg);
+		}
+	}
+
+	@keyframes firework-burst {
+		0% {
+			opacity: 0;
+			transform: translate(0, 0) scale(0.5);
+		}
+		15% {
+			opacity: 1;
+			transform: translate(calc(var(--tx) * 0.3), calc(var(--ty) * 0.3)) scale(1);
+		}
+		100% {
+			opacity: 0;
+			transform: translate(var(--tx), var(--ty)) scale(0);
+		}
+	}
 }
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
@@ -119,13 +146,15 @@ h4 {
 	background-color: rgba(var(--primary-rgb), 0.1);
 }
 
-[data-rehype-pretty-code-figure] [data-highlighted-line][data-highlighted-line-id='add'] {
+[data-rehype-pretty-code-figure]
+	[data-highlighted-line][data-highlighted-line-id='add'] {
 	border-left-color: #06953a;
 	color: #000;
 	background-color: rgba(14, 129, 56, 0.8);
 }
 
-[data-rehype-pretty-code-figure] [data-highlighted-line][data-highlighted-line-id='remove'] {
+[data-rehype-pretty-code-figure]
+	[data-highlighted-line][data-highlighted-line-id='remove'] {
 	border-left-color: rgb(239, 6, 6);
 	color: #000;
 	background-color: rgba(222, 74, 74, 0.8);
@@ -227,7 +256,7 @@ h4 {
 		left: -15px;
 		transform: rotate(-10deg) scale(0);
 		transition: transform 0.3s ease-in-out;
-		@apply w-fit rounded-md border border-primary bg-background px-2 py-0.5 text-sm text-foreground;
+		@apply border-primary bg-background text-foreground w-fit rounded-md border px-2 py-0.5 text-sm;
 	}
 
 	&:hover .label {

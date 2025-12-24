@@ -1,10 +1,12 @@
 import { FontOptimizer } from './build/font-optimizer';
-import { PATHS, FONT_FAMILIES, logger, fileUtils } from './build/utils';
+import { fileUtils, FONT_FAMILIES, logger, PATHS } from './build/utils';
 
 async function main(): Promise<void> {
 	try {
 		if (!fileUtils.fileExists(PATHS.build)) {
-			logger.error('Build directory not found. Please run `pnpm run build` first.');
+			logger.error(
+				'Build directory not found. Please run `pnpm run build` first.'
+			);
 			process.exit(1);
 		}
 
@@ -23,4 +25,4 @@ async function main(): Promise<void> {
 	}
 }
 
-main();
+await main();

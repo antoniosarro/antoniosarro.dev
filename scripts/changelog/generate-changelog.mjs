@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { execSync } from 'child_process';
-import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { parseArgs } from 'util';
 
 /**
@@ -95,7 +95,14 @@ const TYPE_LABELS = {
 };
 
 /** @type {ChangeType[]} */
-const TYPE_ORDER = ['added', 'changed', 'fixed', 'security', 'moved', 'removed'];
+const TYPE_ORDER = [
+	'added',
+	'changed',
+	'fixed',
+	'security',
+	'moved',
+	'removed'
+];
 
 /**
  * Get the diff for a specific commit
@@ -131,7 +138,9 @@ function getCommitDiff(hash, maxLines = 50) {
 		return diff;
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
-		console.warn(`   ⚠️  Could not get diff for ${hash.substring(0, 7)}: ${message}`);
+		console.warn(
+			`   ⚠️  Could not get diff for ${hash.substring(0, 7)}: ${message}`
+		);
 		return null;
 	}
 }
@@ -238,7 +247,9 @@ async function generateWithGemini(commits, prTitle, diffContext = null) {
 	const apiKey = process.env.GEMINI_API_KEY;
 
 	if (!apiKey) {
-		console.warn('⚠️  GEMINI_API_KEY not set, falling back to basic generation');
+		console.warn(
+			'⚠️  GEMINI_API_KEY not set, falling back to basic generation'
+		);
 		return null;
 	}
 
@@ -331,14 +342,17 @@ Respond in this exact JSON format (no markdown, no code blocks):
 
 			if (parsed.title && parsed.description) {
 				console.log('✨ Generated title and description with Gemini');
-				console.log(`   Tokens used: ${data.usageMetadata?.totalTokenCount || 'N/A'}`);
+				console.log(
+					`   Tokens used: ${data.usageMetadata?.totalTokenCount || 'N/A'}`
+				);
 				return {
 					title: parsed.title,
 					description: parsed.description
 				};
 			}
 		} catch (parseError) {
-			const message = parseError instanceof Error ? parseError.message : String(parseError);
+			const message =
+				parseError instanceof Error ? parseError.message : String(parseError);
 			console.warn(`⚠️  Failed to parse Gemini response: ${message}`);
 			console.warn(`   Response was: ${text.substring(0, 200)}`);
 		}
@@ -359,7 +373,9 @@ Respond in this exact JSON format (no markdown, no code blocks):
  * @returns {string} Generated title
  */
 function generateTitleLocal(commits, prTitle) {
-	const validCommits = commits.filter(/** @param {ParsedCommit | null} c */ (c) => c !== null);
+	const validCommits = commits.filter(
+		/** @param {ParsedCommit | null} c */ (c) => c !== null
+	);
 
 	if (validCommits.length === 0) {
 		return prTitle || 'Updates and Improvements';
@@ -373,7 +389,9 @@ function generateTitleLocal(commits, prTitle) {
 	}
 
 	// Find dominant type
-	const dominantType = [...typeCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+	const dominantType = [...typeCounts.entries()].sort(
+		(a, b) => b[1] - a[1]
+	)[0]?.[0];
 
 	// Get unique areas
 	const areas = [...new Set(validCommits.map((c) => c.area))];
@@ -419,7 +437,9 @@ function generateTitleLocal(commits, prTitle) {
  * @returns {string} Generated description
  */
 function generateDescriptionLocal(commits, prTitle) {
-	const validCommits = commits.filter(/** @param {ParsedCommit | null} c */ (c) => c !== null);
+	const validCommits = commits.filter(
+		/** @param {ParsedCommit | null} c */ (c) => c !== null
+	);
 
 	if (validCommits.length === 0) {
 		return prTitle || 'Various updates and improvements.';
@@ -446,7 +466,9 @@ function generateDescriptionLocal(commits, prTitle) {
 			const commit = typeCommits[0];
 			const text = commit.description || commit.title;
 			const firstSentence = text.split(/[.!?]/)[0].trim();
-			parts.push(`${label} ${firstSentence.charAt(0).toLowerCase()}${firstSentence.slice(1)}`);
+			parts.push(
+				`${label} ${firstSentence.charAt(0).toLowerCase()}${firstSentence.slice(1)}`
+			);
 		} else {
 			const areas = [...new Set(typeCommits.map((c) => c.area))];
 			if (areas.length === 1) {
@@ -485,7 +507,12 @@ function generateDescriptionLocal(commits, prTitle) {
  * @param {string | null} [diffContext=null] - Optional diff context
  * @returns {Promise<GeneratedContent>} Generated title and description
  */
-async function generateTitleAndDescription(commits, prTitle, useLLM, diffContext = null) {
+async function generateTitleAndDescription(
+	commits,
+	prTitle,
+	useLLM,
+	diffContext = null
+) {
 	if (useLLM) {
 		const llmResult = await generateWithGemini(commits, prTitle, diffContext);
 		if (llmResult) {
@@ -509,7 +536,9 @@ async function generateTitleAndDescription(commits, prTitle, useLLM, diffContext
  * @returns {ParsedCommit | null} Parsed commit or null if not conventional format
  */
 function parseCommit(hash, includeDiff = false, maxDiffLines = 50) {
-	const fullHash = execSync(`git rev-parse ${hash}`, { encoding: 'utf-8' }).trim();
+	const fullHash = execSync(`git rev-parse ${hash}`, {
+		encoding: 'utf-8'
+	}).trim();
 	const shortHash = fullHash.substring(0, 7);
 
 	const message = execSync(`git log -1 --pretty=format:"%B" ${hash}`, {
@@ -533,7 +562,9 @@ function parseCommit(hash, includeDiff = false, maxDiffLines = 50) {
 		return null;
 	}
 
-	const filesIndex = lines.findIndex((l) => l.trim().toLowerCase() === 'files:');
+	const filesIndex = lines.findIndex(
+		(l) => l.trim().toLowerCase() === 'files:'
+	);
 
 	let description = '';
 	if (filesIndex > 1) {
@@ -597,9 +628,12 @@ function capitalizeFirst(str) {
  */
 function getCommitHashes(base, head) {
 	try {
-		const output = execSync(`git log ${base}..${head} --pretty=format:"%H" --no-merges`, {
-			encoding: 'utf-8'
-		});
+		const output = execSync(
+			`git log ${base}..${head} --pretty=format:"%H" --no-merges`,
+			{
+				encoding: 'utf-8'
+			}
+		);
 
 		return output.split('\n').filter(Boolean);
 	} catch (error) {
@@ -660,7 +694,13 @@ function groupByType(commits) {
  * @param {GroupedChanges[]} groupedChanges - The grouped changes
  * @returns {string} Markdown content for the entry
  */
-function generateEntryMarkdown(version, title, description, commitHash, groupedChanges) {
+function generateEntryMarkdown(
+	version,
+	title,
+	description,
+	commitHash,
+	groupedChanges
+) {
 	const date = new Date().toISOString().split('T')[0];
 
 	let md = `<!--CHANGELOG_ENTRY_START-->\n`;
@@ -728,7 +768,9 @@ function insertEntry(changelog, newEntry) {
 	}
 
 	const header = changelog.substring(0, separatorIndex + separator.length);
-	const existingEntries = changelog.substring(separatorIndex + separator.length);
+	const existingEntries = changelog.substring(
+		separatorIndex + separator.length
+	);
 
 	return header + '\n' + newEntry + '\n\n' + existingEntries.trim() + '\n';
 }
@@ -742,7 +784,10 @@ async function main() {
 	const { version, title, base, head } = /** @type {ParsedArgs} */ (args);
 	const useLLM = /** @type {boolean} */ (args['use-llm']);
 	const includeDiffs = /** @type {boolean} */ (args['include-diffs']);
-	const maxDiffLines = parseInt(/** @type {string} */ (args['max-diff-lines']), 10);
+	const maxDiffLines = parseInt(
+		/** @type {string} */ (args['max-diff-lines']),
+		10
+	);
 
 	if (!version || !base || !head) {
 		console.error('Missing required arguments: --version, --base, --head');
@@ -762,12 +807,18 @@ async function main() {
 	const parsedCommits = commitHashes.map((hash) => {
 		const parsed = parseCommit(hash, includeDiffs, maxDiffLines);
 		if (parsed) {
-			console.log(`   ✓ ${parsed.shortHash} ${parsed.type}(${parsed.area}): ${parsed.title}`);
+			console.log(
+				`   ✓ ${parsed.shortHash} ${parsed.type}(${parsed.area}): ${parsed.title}`
+			);
 			if (parsed.diff) {
-				console.log(`     📄 Diff included (${parsed.diff.split('\n').length} lines)`);
+				console.log(
+					`     📄 Diff included (${parsed.diff.split('\n').length} lines)`
+				);
 			}
 		} else {
-			console.log(`   ✗ ${hash.substring(0, 7)} (skipped - not conventional format)`);
+			console.log(
+				`   ✗ ${hash.substring(0, 7)} (skipped - not conventional format)`
+			);
 		}
 		return parsed;
 	});
@@ -777,7 +828,9 @@ async function main() {
 	);
 
 	if (validCommits.length === 0) {
-		console.warn('\n⚠️  No conventional commits found. Creating minimal entry.');
+		console.warn(
+			'\n⚠️  No conventional commits found. Creating minimal entry.'
+		);
 	}
 
 	const groupedChanges = groupByType(validCommits);
@@ -785,7 +838,9 @@ async function main() {
 	/** @type {string} */
 	let mergeCommitHash;
 	try {
-		mergeCommitHash = execSync('git rev-parse HEAD', { encoding: 'utf-8' }).trim();
+		mergeCommitHash = execSync('git rev-parse HEAD', {
+			encoding: 'utf-8'
+		}).trim();
 	} catch {
 		mergeCommitHash = head;
 	}
@@ -805,12 +860,8 @@ async function main() {
 	}
 
 	console.log('\n📝 Generating title and description...');
-	const { title: generatedTitle, description } = await generateTitleAndDescription(
-		validCommits,
-		title,
-		useLLM,
-		diffContext
-	);
+	const { title: generatedTitle, description } =
+		await generateTitleAndDescription(validCommits, title, useLLM, diffContext);
 
 	console.log(`   Title: "${generatedTitle}"`);
 	console.log(

@@ -1,9 +1,10 @@
-import sharp from 'sharp';
+import { logger } from './utils';
+
+import { existsSync, mkdirSync } from 'fs';
+import fs from 'fs/promises';
 import { glob } from 'glob';
 import path from 'path';
-import fs from 'fs/promises';
-import { existsSync, mkdirSync } from 'fs';
-import { logger } from './utils';
+import sharp from 'sharp';
 
 interface ImageOptimizationConfig {
 	inputDir: string;
@@ -54,10 +55,13 @@ export class ImageOptimizer {
 			mkdirSync(this.config.outputDir, { recursive: true });
 		}
 
-		const imageFiles = await glob(`${this.config.inputDir}/**/*.{jpg,jpeg,png,webp,gif,avif}`, {
-			nodir: true,
-			absolute: true
-		});
+		const imageFiles = await glob(
+			`${this.config.inputDir}/**/*.{jpg,jpeg,png,webp,gif,avif}`,
+			{
+				nodir: true,
+				absolute: true
+			}
+		);
 
 		logger.info(`Found ${imageFiles.length} images to process`);
 
@@ -67,7 +71,10 @@ export class ImageOptimizer {
 			await Promise.all(batch.map((img) => this.processImage(img)));
 		}
 
-		const metadataPath = path.join(this.config.outputDir, 'images-metadata.json');
+		const metadataPath = path.join(
+			this.config.outputDir,
+			'images-metadata.json'
+		);
 		await fs.writeFile(metadataPath, JSON.stringify(this.metadata, null, 2));
 
 		logger.header('📊 Optimization Summary');
@@ -107,7 +114,11 @@ export class ImageOptimizer {
 				height = Math.round(height * ratio);
 			}
 
-			const shouldRegenerate = await this.shouldRegenerate(imagePath, outDir, parsedPath.name);
+			const shouldRegenerate = await this.shouldRegenerate(
+				imagePath,
+				outDir,
+				parsedPath.name
+			);
 
 			if (!shouldRegenerate) {
 				this.metadata[webPath] = {
@@ -140,12 +151,18 @@ export class ImageOptimizer {
 
 			if (this.config.generateOriginalFallback) {
 				const fallbackExt = parsedPath.ext.toLowerCase();
-				const fallbackPath = path.join(outDir, `${parsedPath.name}${fallbackExt}`);
+				const fallbackPath = path.join(
+					outDir,
+					`${parsedPath.name}${fallbackExt}`
+				);
 
 				if (fallbackExt === '.jpg' || fallbackExt === '.jpeg') {
 					await resizedImage.clone().jpeg({ quality: 85 }).toFile(fallbackPath);
 				} else if (fallbackExt === '.png') {
-					await resizedImage.clone().png({ compressionLevel: 9 }).toFile(fallbackPath);
+					await resizedImage
+						.clone()
+						.png({ compressionLevel: 9 })
+						.toFile(fallbackPath);
 				}
 			}
 
@@ -157,7 +174,9 @@ export class ImageOptimizer {
 			};
 
 			this.processedCount++;
-			logger.success(`Optimized: ${relativePath} (${generatedFormats.join(', ')})`);
+			logger.success(
+				`Optimized: ${relativePath} (${generatedFormats.join(', ')})`
+			);
 		} catch (error) {
 			logger.error(`Failed to process ${relativePath}: ${error}`);
 		}

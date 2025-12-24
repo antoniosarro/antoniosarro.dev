@@ -1,14 +1,21 @@
-import tailwindcss from '@tailwindcss/vite';
-import Icons from 'unplugin-icons/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
-import { defineConfig } from 'vite';
+
 import { imageOptimizationPlugin } from './scripts/vite-plugins/image-plugin';
 import { versionPlugin } from './scripts/vite-plugins/version-plugin';
+
+import tailwindcss from '@tailwindcss/vite';
+import Icons from 'unplugin-icons/vite';
+import { defineConfig } from 'vite';
 
 export default defineConfig({
 	plugins: [
 		versionPlugin(),
-		Icons({ autoInstall: true, compiler: 'svelte', scale: 1, defaultClass: 'icon' }),
+		Icons({
+			autoInstall: true,
+			compiler: 'svelte',
+			scale: 1,
+			defaultClass: 'icon'
+		}),
 		tailwindcss(),
 		sveltekit(),
 		imageOptimizationPlugin()

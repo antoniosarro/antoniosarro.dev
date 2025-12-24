@@ -22,7 +22,10 @@ function getAgeFromDates(today: Date, birthDate: Date): number {
 	let age = today.getFullYear() - birthDate.getFullYear();
 	const monthDiff = today.getMonth() - birthDate.getMonth();
 
-	if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+	if (
+		monthDiff < 0 ||
+		(monthDiff === 0 && today.getDate() < birthDate.getDate())
+	) {
 		age--;
 	}
 
@@ -75,7 +78,15 @@ export function parseISO(isoString: string): Date {
 }
 
 export function getDayOfWeek(date: Date): { name: string; number: number } {
-	const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+	const daysOfWeek = [
+		'Sunday',
+		'Monday',
+		'Tuesday',
+		'Wednesday',
+		'Thursday',
+		'Friday',
+		'Saturday'
+	];
 	const dayNumber = date.getDay();
 	return {
 		name: daysOfWeek[dayNumber],
@@ -103,9 +114,19 @@ export function differenceInCalendarDays(date1: Date, date2: Date): number {
 		throw new Error('Both inputs must be instances of Date');
 	}
 
-	const startOfDay1 = new Date(date1.getFullYear(), date1.getMonth(), date1.getDate());
-	const startOfDay2 = new Date(date2.getFullYear(), date2.getMonth(), date2.getDate());
-	const timeDifference = Math.abs(startOfDay1.getTime() - startOfDay2.getTime());
+	const startOfDay1 = new Date(
+		date1.getFullYear(),
+		date1.getMonth(),
+		date1.getDate()
+	);
+	const startOfDay2 = new Date(
+		date2.getFullYear(),
+		date2.getMonth(),
+		date2.getDate()
+	);
+	const timeDifference = Math.abs(
+		startOfDay1.getTime() - startOfDay2.getTime()
+	);
 
 	return timeDifference / (1000 * 60 * 60 * 24);
 }

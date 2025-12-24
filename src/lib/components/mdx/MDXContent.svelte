@@ -1,16 +1,24 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	/* eslint svelte/no-at-html-tags: "off" */
+
+	import { onDestroy, onMount } from 'svelte';
 	import { mount, unmount } from 'svelte';
-	import PreWrapper from './wrappers/PreWrapper.svelte';
+
+	import AWrapper from './wrappers/AWrapper.svelte';
 	import H2Wrapper from './wrappers/H2Wrapper.svelte';
 	import H3Wrapper from './wrappers/H3Wrapper.svelte';
-	import AWrapper from './wrappers/AWrapper.svelte';
-	import UlWrapper from './wrappers/UlWrapper.svelte';
 	import OlWrapper from './wrappers/OlWrapper.svelte';
+	import PreWrapper from './wrappers/PreWrapper.svelte';
+	import UlWrapper from './wrappers/UlWrapper.svelte';
 
 	interface Props {
 		html: string;
-		codeBlocks: Array<{ index: number; title?: string; language?: string; code: string }>;
+		codeBlocks: Array<{
+			index: number;
+			title?: string;
+			language?: string;
+			code: string;
+		}>;
 	}
 
 	let { html, codeBlocks }: Props = $props();
@@ -25,11 +33,15 @@
 		replaceLinks();
 		replaceLists();
 		replaceCodeBlocks();
+	});
 
-		return () => {
-			mountedComponents.forEach((component) => unmount(component, { outro: true }));
+	onDestroy(() => {
+		onDestroy(() => {
+			for (const component of mountedComponents) {
+				void unmount(component, { outro: true });
+			}
 			mountedComponents = [];
-		};
+		});
 	});
 
 	function replaceHeadings() {
@@ -120,9 +132,12 @@
 			const placeholder = document.createElement('div');
 			pre.parentNode?.replaceChild(placeholder, pre);
 
-			const showLineNumbers = pre.querySelector('code[data-line-numbers]') !== null;
+			const showLineNumbers =
+				pre.querySelector('code[data-line-numbers]') !== null;
 			const codeElement = pre.querySelector('code');
-			const maxDigits = codeElement?.getAttribute('data-line-numbers-max-digits');
+			const maxDigits = codeElement?.getAttribute(
+				'data-line-numbers-max-digits'
+			);
 
 			const component = mount(PreWrapper, {
 				target: placeholder,

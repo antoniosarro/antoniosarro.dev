@@ -1,10 +1,10 @@
 <script lang="ts">
 	import Plus from '~icons/solar/add-circle-bold';
-	import Edit from '~icons/solar/pen-bold';
-	import Trash from '~icons/solar/trash-bin-trash-bold';
-	import Move from '~icons/solar/transfer-horizontal-bold';
 	import Bug from '~icons/solar/bug-bold';
+	import Edit from '~icons/solar/pen-bold';
 	import Shield from '~icons/solar/shield-check-bold';
+	import Move from '~icons/solar/transfer-horizontal-bold';
+	import Trash from '~icons/solar/trash-bin-trash-bold';
 
 	import type { ChangeItem, ChangeType } from '$lib/types/changelog';
 
@@ -58,17 +58,21 @@
 
 	// Group changes by type
 	const groupedChanges = $derived.by(() => {
-		const groups = new Map<ChangeType, ChangeItem[]>();
-		const order: ChangeType[] = ['added', 'changed', 'fixed', 'security', 'moved', 'removed'];
-
-		for (const change of changes) {
-			const existing = groups.get(change.type) || [];
-			groups.set(change.type, [...existing, change]);
-		}
+		const order: ChangeType[] = [
+			'added',
+			'changed',
+			'fixed',
+			'security',
+			'moved',
+			'removed'
+		];
 
 		return order
-			.filter((type) => groups.has(type))
-			.map((type) => ({ type, items: groups.get(type)! }));
+			.map((type) => ({
+				type,
+				items: changes.filter((change) => change.type === type)
+			}))
+			.filter((group) => group.items.length > 0);
 	});
 </script>
 
@@ -80,24 +84,24 @@
 		<div>
 			<div class="mb-2 flex items-center gap-2">
 				<span
-					class="inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs font-semibold {config.bgColor} {config.color}"
-				>
+					class="inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs font-semibold {config.bgColor} {config.color}">
 					<Icon class="size-3" />
 					{config.label}
 				</span>
-				<span class="text-xs text-accent">({items.length})</span>
+				<span class="text-accent text-xs">({items.length})</span>
 			</div>
 
 			<ul class="flex flex-col gap-1.5">
 				{#each items as item (item.description)}
-					<li class="flex items-start gap-2 text-sm text-foreground/80">
-						<span class="mt-1.5 size-1.5 shrink-0 rounded-full {config.color} opacity-60"></span>
+					<li class="text-foreground/80 flex items-start gap-2 text-sm">
+						<span
+							class="mt-1.5 size-1.5 shrink-0 rounded-full {config.color} opacity-60">
+						</span>
 						<span>
 							{item.description}
 							{#if item.component}
 								<code
-									class="ml-1 rounded bg-elevation-one px-1 py-0.5 font-mono text-xs text-accent"
-								>
+									class="bg-elevation-one text-accent ml-1 rounded px-1 py-0.5 font-mono text-xs">
 									{item.component}
 								</code>
 							{/if}

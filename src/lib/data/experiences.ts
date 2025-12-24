@@ -1,4 +1,5 @@
 interface Experience {
+	key: number;
 	position: string;
 	company: string;
 	dates: string[];
@@ -8,6 +9,7 @@ interface Experience {
 
 export const experiences: Experience[] = [
 	{
+		key: 1,
 		position: 'Fullstack Developer',
 		company: 'Freelancer',
 		dates: ['2024/01/01', '2024/12/01'],
@@ -17,6 +19,7 @@ export const experiences: Experience[] = [
 		]
 	},
 	{
+		key: 2,
 		position: 'Fullstack Developer',
 		company: 'ACCA Software',
 		dates: ['2022/02/01', '2023/03/01'],
@@ -28,6 +31,7 @@ export const experiences: Experience[] = [
 		logo: 'acca'
 	},
 	{
+		key: 3,
 		position: 'Fullstack Developer',
 		company: 'Freelancer',
 		dates: ['2020/01/01', '2020/06/01'],
@@ -36,6 +40,7 @@ export const experiences: Experience[] = [
 		]
 	},
 	{
+		key: 4,
 		position: 'Backend Game Developer',
 		company: 'Evolution Studio',
 		dates: ['2019/05/01', '2019/11/01'],

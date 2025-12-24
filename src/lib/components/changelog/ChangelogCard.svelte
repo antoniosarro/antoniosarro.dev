@@ -1,24 +1,24 @@
 <script lang="ts">
 	import Github from '~icons/mdi/github';
-	import Tag from '~icons/solar/tag-bold';
-	import Calendar from '~icons/solar/calendar-bold';
 	import Plus from '~icons/solar/add-circle-bold';
-	import Edit from '~icons/solar/pen-bold';
-	import Trash from '~icons/solar/trash-bin-trash-bold';
-	import Bug from '~icons/solar/bug-bold';
 	import ChevronRight from '~icons/solar/alt-arrow-right-linear';
+	import Bug from '~icons/solar/bug-bold';
+	import Calendar from '~icons/solar/calendar-bold';
+	import Edit from '~icons/solar/pen-bold';
+	import Tag from '~icons/solar/tag-bold';
+	import Trash from '~icons/solar/trash-bin-trash-bold';
+
+	import { formatDateFull } from '$lib/utils/date';
 
 	import type { ChangelogEntry, ChangeType } from '$lib/types/changelog';
-	import { formatDateFull } from '$lib/utils/date';
 
 	interface Props {
 		entry: ChangelogEntry;
 		index: number;
-		isLast?: boolean;
 		onclick: () => void;
 	}
 
-	let { entry, index, isLast = false, onclick }: Props = $props();
+	let { entry, index, onclick }: Props = $props();
 
 	const isEven = $derived(index % 2 === 0);
 	const githubUrl = $derived(
@@ -79,8 +79,17 @@
 	};
 
 	// Display order for change type badges
-	const displayOrder: ChangeType[] = ['added', 'changed', 'fixed', 'removed', 'moved', 'security'];
-	const visibleTypes = $derived(displayOrder.filter((type) => changeCounts[type]));
+	const displayOrder: ChangeType[] = [
+		'added',
+		'changed',
+		'fixed',
+		'removed',
+		'moved',
+		'security'
+	];
+	const visibleTypes = $derived(
+		displayOrder.filter((type) => changeCounts[type])
+	);
 </script>
 
 <!-- Mobile layout: dot on left, card on right -->
@@ -91,9 +100,8 @@
 		<!-- Dot container - fixed width to align with timeline -->
 		<div class="flex w-4 shrink-0 items-center justify-center">
 			<div
-				class="flex size-3 items-center justify-center rounded-full border-2 border-primary bg-background"
-			>
-				<div class="size-1 rounded-full bg-primary"></div>
+				class="border-primary bg-background flex size-3 items-center justify-center rounded-full border-2">
+				<div class="bg-primary size-1 rounded-full"></div>
 			</div>
 		</div>
 
@@ -101,18 +109,16 @@
 		<div class="min-w-0 flex-1">
 			<button
 				{onclick}
-				class="group w-full cursor-pointer rounded-xl border border-elevation-one bg-background p-4 text-left shadow-sm transition-all duration-300 hover:border-primary hover:shadow-lg hover:shadow-primary/5"
-			>
+				class="group border-elevation-one bg-background hover:border-primary hover:shadow-primary/5 w-full cursor-pointer rounded-xl border p-4 text-left shadow-sm transition-all duration-300 hover:shadow-lg">
 				<!-- Header -->
 				<div class="mb-3 flex flex-wrap items-center gap-2">
 					<span
-						class="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-xs font-bold text-primary"
-					>
+						class="bg-primary/10 text-primary inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-bold">
 						<Tag class="size-3" />
 						v{entry.version}
 					</span>
 
-					<div class="flex items-center gap-1.5 text-xs text-accent">
+					<div class="text-accent flex items-center gap-1.5 text-xs">
 						<Calendar class="size-3" />
 						<time datetime={entry.date}>{formatDateFull(entry.date)}</time>
 					</div>
@@ -121,14 +127,13 @@
 				<!-- Title & Description -->
 				{#if entry.title}
 					<h3
-						class="mb-2 font-incognito text-base font-bold tracking-tight text-foreground transition-colors group-hover:text-primary"
-					>
+						class="font-incognito text-foreground group-hover:text-primary mb-2 text-base font-bold tracking-tight transition-colors">
 						{entry.title}
 					</h3>
 				{/if}
 
 				{#if entry.description}
-					<p class="mb-3 line-clamp-2 text-xs leading-relaxed text-accent">
+					<p class="text-accent mb-3 line-clamp-2 text-xs leading-relaxed">
 						{entry.description}
 					</p>
 				{/if}
@@ -140,8 +145,7 @@
 						{@const Icon = config.icon}
 						{@const count = changeCounts[type]}
 						<span
-							class="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium {config.bgColor} {config.color}"
-						>
+							class="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium {config.bgColor} {config.color}">
 							<Icon class="size-2.5" />
 							{count}
 						</span>
@@ -152,25 +156,30 @@
 	</div>
 
 	<!-- Desktop Layout -->
-	<div class="hidden md:flex md:items-center {isEven ? 'md:flex-row' : 'md:flex-row-reverse'}">
+	<div
+		class="hidden md:flex md:items-center {isEven
+			? 'md:flex-row'
+			: 'md:flex-row-reverse'}">
 		<!-- Card side -->
-		<div class="w-[calc(50%-2rem)] {isEven ? 'pr-8 text-right' : 'pl-8 text-left'}">
+		<div
+			class="w-[calc(50%-2rem)] {isEven
+				? 'pr-8 text-right'
+				: 'pl-8 text-left'}">
 			<button
 				{onclick}
-				class="group w-full cursor-pointer rounded-xl border border-elevation-one bg-background p-6 text-left shadow-sm transition-all duration-300 hover:border-primary hover:shadow-lg hover:shadow-primary/5"
-			>
+				class="group border-elevation-one bg-background hover:border-primary hover:shadow-primary/5 w-full cursor-pointer rounded-xl border p-6 text-left shadow-sm transition-all duration-300 hover:shadow-lg">
 				<!-- Header -->
 				<div
-					class="mb-3 flex flex-wrap items-center gap-3 {isEven ? 'flex-row-reverse' : 'flex-row'}"
-				>
+					class="mb-3 flex flex-wrap items-center gap-3 {isEven
+						? 'flex-row-reverse'
+						: 'flex-row'}">
 					<span
-						class="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary"
-					>
+						class="bg-primary/10 text-primary inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold">
 						<Tag class="size-3.5" />
 						v{entry.version}
 					</span>
 
-					<div class="flex items-center gap-2 text-sm text-accent">
+					<div class="text-accent flex items-center gap-2 text-sm">
 						<Calendar class="size-3.5" />
 						<time datetime={entry.date}>{formatDateFull(entry.date)}</time>
 					</div>
@@ -180,10 +189,9 @@
 							href={githubUrl}
 							target="_blank"
 							rel="noopener noreferrer"
-							class="flex items-center gap-1 font-mono text-xs text-accent transition-colors hover:text-primary"
+							class="text-accent hover:text-primary flex items-center gap-1 font-mono text-xs transition-colors"
 							title="View commit on GitHub"
-							onclick={(e) => e.stopPropagation()}
-						>
+							onclick={(e) => e.stopPropagation()}>
 							<Github class="size-3.5" />
 							{entry.commitHash?.substring(0, 7)}
 						</a>
@@ -193,31 +201,31 @@
 				<!-- Title & Description -->
 				{#if entry.title}
 					<h3
-						class="mb-2 font-incognito text-xl font-bold tracking-tight text-foreground transition-colors group-hover:text-primary
-							   {isEven ? 'text-right' : 'text-left'}"
-					>
+						class="font-incognito text-foreground group-hover:text-primary mb-2 text-xl font-bold tracking-tight transition-colors
+							   {isEven ? 'text-right' : 'text-left'}">
 						{entry.title}
 					</h3>
 				{/if}
 
 				{#if entry.description}
 					<p
-						class="mb-4 line-clamp-2 text-sm leading-relaxed text-accent
-							   {isEven ? 'text-right' : 'text-left'}"
-					>
+						class="text-accent mb-4 line-clamp-2 text-sm leading-relaxed
+							   {isEven ? 'text-right' : 'text-left'}">
 						{entry.description}
 					</p>
 				{/if}
 
 				<!-- Change counts summary -->
-				<div class="flex flex-wrap items-center gap-2 {isEven ? 'flex-row-reverse' : 'flex-row'}">
+				<div
+					class="flex flex-wrap items-center gap-2 {isEven
+						? 'flex-row-reverse'
+						: 'flex-row'}">
 					{#each visibleTypes as type (type)}
 						{@const config = typeConfig[type]}
 						{@const Icon = config.icon}
 						{@const count = changeCounts[type]}
 						<span
-							class="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium {config.bgColor} {config.color}"
-						>
+							class="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium {config.bgColor} {config.color}">
 							<Icon class="size-3" />
 							{count}
 						</span>
@@ -225,9 +233,8 @@
 
 					<!-- View details hint -->
 					<span
-						class="flex items-center gap-1 text-xs text-accent opacity-0 transition-opacity group-hover:opacity-100
-							   {isEven ? 'mr-auto' : 'ml-auto'}"
-					>
+						class="text-accent flex items-center gap-1 text-xs opacity-0 transition-opacity group-hover:opacity-100
+							   {isEven ? 'mr-auto' : 'ml-auto'}">
 						View details
 						<ChevronRight class="size-3" />
 					</span>
@@ -238,9 +245,8 @@
 		<!-- Center dot -->
 		<div class="flex w-16 shrink-0 items-center justify-center">
 			<div
-				class="flex size-4 items-center justify-center rounded-full border-2 border-primary bg-background"
-			>
-				<div class="size-2 rounded-full bg-primary"></div>
+				class="border-primary bg-background flex size-4 items-center justify-center rounded-full border-2">
+				<div class="bg-primary size-2 rounded-full"></div>
 			</div>
 		</div>
 

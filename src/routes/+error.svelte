@@ -1,18 +1,24 @@
 <script lang="ts">
-	import SearchOff from '~icons/material-symbols/search-off';
 	import Block from '~icons/material-symbols/block';
-	import Error from '~icons/material-symbols/error';
 	import Build from '~icons/material-symbols/build';
+	import Error from '~icons/material-symbols/error';
+	import SearchOff from '~icons/material-symbols/search-off';
 	import Warning from '~icons/material-symbols/warning';
 
 	import { page } from '$app/state';
+
 	import { Metadata } from '$lib/components/shared';
 
-	const errorConfigs: Record<
-		number,
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		{ title: string; message: string; icon: any; suggestion: string }
-	> = {
+	import type { Component } from 'svelte';
+
+	interface ErrorConfig {
+		title: string;
+		message: string;
+		icon: Component<{ height?: number; width?: number; class?: string }>;
+		suggestion: string;
+	}
+
+	const errorConfigs: Record<number, ErrorConfig> = {
 		404: {
 			title: 'Page Not Found',
 			message: "The page you're looking for doesn't exist or has been moved.",
@@ -39,11 +45,12 @@
 		}
 	};
 
-	const defaultError = {
+	const defaultError: ErrorConfig = {
 		title: 'Something Went Wrong',
 		message: 'An unexpected error occurred.',
 		icon: Warning,
-		suggestion: 'Please try refreshing the page or contact support if the problem persists.'
+		suggestion:
+			'Please try refreshing the page or contact support if the problem persists.'
 	};
 
 	const errorConfig = errorConfigs[page.status] || defaultError;
@@ -53,37 +60,25 @@
 <Metadata />
 
 <main
-	class="relative mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center px-6 md:px-16"
->
+	class="relative mx-auto flex max-w-7xl flex-col items-center justify-center px-6 md:px-16">
 	<div class="mb-8 text-center">
 		<div class="mb-6 flex justify-center">
 			<Icon height={120} width={120} class="text-primary opacity-80" />
 		</div>
 
-		<!-- Status Code -->
-		<div class="mb-4 font-incognito text-2xl font-bold tracking-tight text-primary sm:text-3xl">
-			{page.status}
-		</div>
-
 		<!-- Error Title -->
-		<h1 class="mb-4 font-incognito text-3xl font-semibold tracking-tight sm:text-4xl">
+		<h1
+			class="font-incognito mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
 			{errorConfig.title}
 		</h1>
 
 		<!-- Error Message -->
-		<p class="mb-2 max-w-2xl text-base leading-relaxed text-accent">
+		<p class="text-accent mb-2 max-w-2xl text-base leading-relaxed">
 			{errorConfig.message}
 		</p>
 
-		<!-- Error Detail (if available) -->
-		{#if page.error?.message && page.error.message !== errorConfig.title}
-			<p class="mb-4 max-w-2xl text-sm text-accent opacity-80">
-				{page.error.message}
-			</p>
-		{/if}
-
 		<!-- Suggestion -->
-		<p class="mb-8 max-w-2xl text-sm text-accent">
+		<p class="text-accent mb-8 max-w-2xl text-sm">
 			{errorConfig.suggestion}
 		</p>
 	</div>

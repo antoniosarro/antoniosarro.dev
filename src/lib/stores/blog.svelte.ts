@@ -28,7 +28,11 @@ export class BlogFilterState {
 	}
 
 	get hasActiveFilters() {
-		return this.search.length > 0 || this.selectedTags.length > 0 || this.viewMode !== 'all';
+		return (
+			this.search.length > 0 ||
+			this.selectedTags.length > 0 ||
+			this.viewMode !== 'all'
+		);
 	}
 }
 

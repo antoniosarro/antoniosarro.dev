@@ -1,10 +1,11 @@
-import Home from '~icons/material-symbols-light/home';
-import PersonOutlineRounded from '~icons/material-symbols/person-outline-rounded';
 import Beaker from '~icons/heroicons-solid/beaker';
 import Book from '~icons/lets-icons/book';
 import History from '~icons/material-symbols/history';
+import PersonOutlineRounded from '~icons/material-symbols/person-outline-rounded';
+import Home from '~icons/material-symbols-light/home';
 
 import type { Pathname } from '$app/types';
+import type { Component } from 'svelte';
 
 export interface Route {
 	title: string;
@@ -13,7 +14,7 @@ export interface Route {
 	show: boolean;
 	description: string;
 	image: string;
-	icon: any;
+	icon: Component | null;
 	url: string;
 	twitter: {
 		image: string;
@@ -82,7 +83,8 @@ export const routes: Route[] = [
 		nav: 'Blog',
 		path: '/blogs',
 		show: true,
-		description: 'Some articles I have written to share my knowledge and discoveries',
+		description:
+			'Some articles I have written to share my knowledge and discoveries',
 		image: '',
 		icon: Book,
 		url: 'https://antoniosarro.dev/blog',
@@ -99,7 +101,8 @@ export const routes: Route[] = [
 		nav: 'Changelog',
 		path: '/changelog',
 		show: false,
-		description: 'A detailed history of all changes and updates made to this website',
+		description:
+			'A detailed history of all changes and updates made to this website',
 		image: '',
 		icon: History,
 		url: 'https://antoniosarro.dev/changelog',

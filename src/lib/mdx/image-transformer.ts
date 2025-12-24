@@ -1,8 +1,9 @@
+import type { Element, Root } from 'hast';
 import type { Plugin } from 'unified';
-import type { Root, Element } from 'hast';
-import { visit } from 'unist-util-visit';
+
 import fs from 'fs';
 import path from 'path';
+import { visit } from 'unist-util-visit';
 
 interface ImageMetadata {
 	width: number;
@@ -30,7 +31,9 @@ function loadImageMetadata(): ImageMetadataMap {
 			return imageMetadataCache!;
 		}
 	} catch (e) {
-		console.warn('⚠️ Could not load image metadata. Run pnpm run optimize:images first.');
+		console.warn(
+			'⚠️ Could not load image metadata. Run pnpm run optimize:images first.'
+		);
 	}
 
 	return {};

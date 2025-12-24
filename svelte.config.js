@@ -23,7 +23,7 @@ const config = {
 		}
 	},
 	vitePlugin: {
-		inspector: false
+		inspector: true
 	},
 	extensions: ['.svelte', '.svx', '.mdx']
 };

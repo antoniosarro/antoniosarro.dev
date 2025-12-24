@@ -8,17 +8,15 @@
 		<li>
 			{#if url}
 				<a
-					class="group flex items-center gap-1 border-b border-elevation-one"
+					class="group border-elevation-one flex items-center gap-1 border-b"
 					aria-label="{name} Link"
 					rel="noopener"
 					target="_blank"
-					href="{url}{!url.includes('mailto') ? '?ref=antoniosarro.dev' : ''}"
-				>
+					href="{url}{!url.includes('mailto') ? '?ref=antoniosarro.dev' : ''}">
 					<Icon
-						class="flex-shrink-0 duration-300 group-hover:text-primary"
+						class="group-hover:text-primary shrink-0 duration-300"
 						width={20}
-						height={20}
-					/>
+						height={20} />
 					{name}
 				</a>
 			{/if}

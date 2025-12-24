@@ -9,7 +9,14 @@
 		sizes?: string;
 	}
 
-	let { src, alt, class: className = '', eager = false, sizes, ...restProps }: Props = $props();
+	let {
+		src,
+		alt,
+		class: className = '',
+		eager = false,
+		sizes,
+		...restProps
+	}: Props = $props();
 
 	// Extract base path without extension
 	const basePath = $derived(src.replace(/\.[^/.]+$/, ''));
@@ -32,8 +39,7 @@
 			loading={eager ? 'eager' : 'lazy'}
 			decoding={eager ? 'sync' : 'async'}
 			class={className}
-			{...restProps}
-		/>
+			{...restProps} />
 	</picture>
 {:else}
 	<img
@@ -42,8 +48,7 @@
 		loading={eager ? 'eager' : 'lazy'}
 		decoding={eager ? 'sync' : 'async'}
 		class={className}
-		{...restProps}
-	/>
+		{...restProps} />
 {/if}
 
 <style>

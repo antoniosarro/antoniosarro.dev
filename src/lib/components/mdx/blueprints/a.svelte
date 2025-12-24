@@ -17,8 +17,7 @@
 <a
 	{href}
 	target={!internal ? '_blank' : undefined}
-	rel={!internal ? 'noopener noreferrer' : undefined}
->
+	rel={!internal ? 'noopener noreferrer' : undefined}>
 	{@render children()}
 	{#if !internal}
 		<Link />
@@ -29,7 +28,7 @@
 	@reference "../../../../app.css";
 
 	a {
-		@apply inline-flex items-center gap-1 text-primary;
+		@apply text-primary inline-flex items-center gap-1;
 		background-image: linear-gradient(currentColor, currentColor);
 		background-repeat: no-repeat;
 		background-position: 0% 100%;

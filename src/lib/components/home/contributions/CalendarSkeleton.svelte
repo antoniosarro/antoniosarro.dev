@@ -1,6 +1,10 @@
 <script lang="ts">
 	import { DEFAULT_LABELS } from '$lib/constants/calendar';
-	import { getDimensions, getMonthLabels, groupByWeeks } from '$lib/utils/calendar';
+	import {
+		getDimensions,
+		getMonthLabels,
+		groupByWeeks
+	} from '$lib/utils/calendar';
 	import { generateMockYearlyDates } from '$lib/utils/date';
 
 	const BLOCK_SIZE = 12;
@@ -10,7 +14,9 @@
 
 	const days = generateMockYearlyDates(2025);
 	const weeks = $derived(groupByWeeks(days, WEEK_START));
-	const dimensions = $derived(getDimensions(weeks, BLOCK_SIZE, BLOCK_MARGIN, LABEL_HEIGHT));
+	const dimensions = $derived(
+		getDimensions(weeks, BLOCK_SIZE, BLOCK_MARGIN, LABEL_HEIGHT)
+	);
 	const monthLabels = $derived(getMonthLabels(weeks, DEFAULT_LABELS.months));
 
 	function getBlockTransform(weekIndex: number): string {
@@ -27,16 +33,14 @@
 		<svg
 			width={dimensions.width}
 			height={dimensions.height}
-			viewBox="0 0 {dimensions.width} {dimensions.height}"
-		>
+			viewBox="0 0 {dimensions.width} {dimensions.height}">
 			<g>
 				{#each monthLabels as { label, weekIndex } (weekIndex)}
 					<text
 						x={(BLOCK_SIZE + BLOCK_MARGIN) * weekIndex}
 						y={0}
 						dominant-baseline="hanging"
-						fill="currentColor"
-					>
+						fill="currentColor">
 						{label}
 					</text>
 				{/each}
@@ -47,7 +51,7 @@
 					{#each week as day, dayIndex (dayIndex)}
 						{#if day}
 							<rect
-								class="animate-pulse fill-elevation-one"
+								class="fill-elevation-one animate-pulse"
 								x={0}
 								y={getBlockY(dayIndex)}
 								width={BLOCK_SIZE}
@@ -55,8 +59,7 @@
 								rx={2}
 								ry={2}
 								data-date={day.date}
-								data-level={day.level}
-							/>
+								data-level={day.level} />
 						{/if}
 					{/each}
 				</g>
@@ -64,8 +67,9 @@
 		</svg>
 	</div>
 
-	<footer class="flex animate-pulse flex-wrap gap-x-1 gap-y-4 whitespace-nowrap">
-		<div class="h-5 w-36 rounded-md bg-elevation-one"></div>
-		<div class="ml-auto h-5 w-36 rounded-md bg-elevation-one"></div>
+	<footer
+		class="flex animate-pulse flex-wrap gap-x-1 gap-y-4 whitespace-nowrap">
+		<div class="bg-elevation-one h-5 w-36 rounded-md"></div>
+		<div class="bg-elevation-one ml-auto h-5 w-36 rounded-md"></div>
 	</footer>
 </article>

@@ -1,6 +1,4 @@
 import { DEFAULT_MONTH_LABELS } from '$lib/constants/calendar';
-import type { DayIndex, MonthLabel, Week } from '$lib/types/github/calendar';
-import type { Contribution } from '$lib/types/github/contributions';
 import {
 	differenceInCalendarDays,
 	getDayOfWeek,
@@ -10,6 +8,9 @@ import {
 	subtractWeeks
 } from '$lib/utils/date';
 import { range } from '$lib/utils/generic';
+
+import type { DayIndex, MonthLabel, Week } from '$lib/types/github/calendar';
+import type { Contribution } from '$lib/types/github/contributions';
 
 export function getDimensions(
 	weeks: Week[],
@@ -23,7 +24,10 @@ export function getDimensions(
 	};
 }
 
-export function groupByWeeks(contributions: Contribution[], weekStart: DayIndex = 0): Week[] {
+export function groupByWeeks(
+	contributions: Contribution[],
+	weekStart: DayIndex = 0
+): Week[] {
 	const firstContribution = contributions[0];
 	const firstDate = parseISO(firstContribution.date);
 	const firstCalendarDate =
@@ -61,8 +65,12 @@ export function getMonthLabels(
 			const month = monthNames[getMonth(parseISO(firstActivity.date))];
 
 			if (!month) {
-				const monthName = new Date(firstActivity.date).toLocaleString('en-US', { month: 'short' });
-				throw new Error(`Unexpected error: undefined month label for ${monthName}.`);
+				const monthName = new Date(firstActivity.date).toLocaleString('en-US', {
+					month: 'short'
+				});
+				throw new Error(
+					`Unexpected error: undefined month label for ${monthName}.`
+				);
 			}
 
 			const prevLabel = labels[labels.length - 1];
@@ -75,7 +83,9 @@ export function getMonthLabels(
 		}, [])
 		.filter(({ weekIndex }, index, labels) => {
 			if (index === 0) {
-				return labels[1] && labels[1].weekIndex - weekIndex >= MIN_WEEKS_FOR_LABEL;
+				return (
+					labels[1] && labels[1].weekIndex - weekIndex >= MIN_WEEKS_FOR_LABEL
+				);
 			}
 
 			if (index === labels.length - 1) {

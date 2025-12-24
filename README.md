@@ -5,14 +5,16 @@
 
   <br />
 
-  ![SvelteKit](https://img.shields.io/badge/SvelteKit-FF3E00?style=for-the-badge&logo=svelte&logoColor=white)
-  ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-  ![Tailwind CSS](https://img.shields.io/badge/Tailwind-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
-  ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![SvelteKit](https://img.shields.io/badge/SvelteKit-FF3E00?style=for-the-badge&logo=svelte&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 
   <br />
 
-  [Live Site](https://antoniosarro.dev) • [Blog](https://antoniosarro.dev/blogs) • [Changelog](https://antoniosarro.dev/changelog)
+[Live Site](https://antoniosarro.dev) • [Blog](https://antoniosarro.dev/blogs) •
+[Changelog](https://antoniosarro.dev/changelog)
+
 </div>
 
 ---
@@ -32,14 +34,14 @@
 
 ## 🛠️ Tech Stack
 
-| Layer | Technology |
-|-------|------------|
-| Framework | SvelteKit 2 + Svelte 5 (runes) |
-| Styling | Tailwind CSS 4 |
-| Content | Custom MDX processor (unified/rehype/shiki) |
-| Deployment | Docker + Nginx |
-| CI/CD | GitHub Actions + Komodo |
-| Dev Environment | Nix Flake |
+| Layer           | Technology                                  |
+| --------------- | ------------------------------------------- |
+| Framework       | SvelteKit 2 + Svelte 5 (runes)              |
+| Styling         | Tailwind CSS 4                              |
+| Content         | Custom MDX processor (unified/rehype/shiki) |
+| Deployment      | Docker + Nginx                              |
+| CI/CD           | GitHub Actions + Komodo                     |
+| Dev Environment | Nix Flake                                   |
 
 ## 🚀 Quick Start
 
@@ -50,6 +52,7 @@
 - Python 3 (for font optimization)
 
 ### Using Nix (Recommended)
+
 ```bash
 # Clone and enter the directory (direnv auto-loads the environment)
 git clone https://github.com/antoniosarro/antoniosarro.dev.git
@@ -63,6 +66,7 @@ pnpm run dev
 ```
 
 ### Manual Setup
+
 ```bash
 # Install font tools
 pip install fonttools brotli zopfli
@@ -78,6 +82,7 @@ pnpm run build:prod
 ```
 
 ## 📁 Project Structure
+
 ```
 ├── blog/                 # MDX blog posts
 ├── assets/
@@ -100,6 +105,7 @@ pnpm run build:prod
 ```
 
 ## 🔧 Available Commands
+
 ```bash
 # Development
 pnpm run dev              # Start dev server
@@ -118,6 +124,7 @@ pnpm run optimize:fonts   # Subset fonts to used characters
 ```
 
 ## 🐳 Docker
+
 ```bash
 # Build and run
 docker compose up -d

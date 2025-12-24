@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { getProjectState } from '$lib/stores/project.svelte';
-	import type { RepositoryInfo } from '$lib/types/github/types';
 	import { range } from '$lib/utils/generic';
+
 	import ProjectCard from './ProjectCard.svelte';
 	import ProjectSkeleton from './ProjectSkeleton.svelte';
+
+	import type { RepositoryInfo } from '$lib/types/github/types';
 
 	const SKELETON_COUNT = 3;
 
@@ -24,7 +26,8 @@
 		} else {
 			return data.filter((project) => {
 				return (
-					project.contributor === state.contribution || !project.contributor === state.personal
+					project.contributor === state.contribution ||
+					!project.contributor === state.personal
 				);
 			});
 		}
@@ -34,7 +37,7 @@
 <section id="projects">
 	<div class="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
 		{#if loading}
-			{#each range(SKELETON_COUNT) as _, index (index)}
+			{#each range(SKELETON_COUNT) as i (i)}
 				<ProjectSkeleton />
 			{/each}
 		{:else}

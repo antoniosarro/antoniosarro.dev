@@ -1,48 +1,61 @@
-import { parseHTML } from 'linkedom';
 import { prerender } from '$app/server';
 
-import type { Contribution, Level, Result } from '$lib/types/github/contributions';
 import { getDayOfYear, getGitHubYears } from '$lib/utils/date';
+
+import type {
+	Contribution,
+	Level,
+	Result
+} from '$lib/types/github/contributions';
+
+import { parseHTML } from 'linkedom';
 
 /**
  * Remote function to fetch GitHub contributions across multiple years.
  */
-export const getGithubContributions = prerender(async (): Promise<{ [year: number]: Result }> => {
-	const username = 'antoniosarro';
-	const years = getGitHubYears(2024);
+export const getGithubContributions = prerender(
+	async (): Promise<{ [year: number]: Result }> => {
+		const username = 'antoniosarro';
+		const years = getGitHubYears(2024);
 
-	// Fetch all years in parallel
-	const results = await Promise.allSettled(
-		years.map(async (year) => ({
-			year,
-			data: await fetchYearContributions(username, year)
-		}))
-	);
+		// Fetch all years in parallel
+		const results = await Promise.allSettled(
+			years.map(async (year) => ({
+				year,
+				data: await fetchYearContributions(username, year)
+			}))
+		);
 
-	// Process results
-	const contributions: { [year: number]: Result } = {};
+		// Process results
+		const contributions: { [year: number]: Result } = {};
 
-	results.forEach((result) => {
-		if (result.status === 'fulfilled') {
-			contributions[result.value.year] = result.value.data;
-		} else {
-			console.error(`Failed to fetch contributions:`, result.reason);
-		}
-	});
+		results.forEach((result) => {
+			if (result.status === 'fulfilled') {
+				contributions[result.value.year] = result.value.data;
+			} else {
+				console.error(`Failed to fetch contributions:`, result.reason);
+			}
+		});
 
-	return contributions;
-});
+		return contributions;
+	}
+);
 
 /**
  * Scrapes the GitHub contribution data for a given user and year.
  */
-async function scrapeGithubContribution(username: string, year: number): Promise<string> {
+async function scrapeGithubContribution(
+	username: string,
+	year: number
+): Promise<string> {
 	const url = `https://github.com/users/${username}/contributions?from=${year}-01-01&to=${year}-12-31`;
 
 	const response = await fetch(url);
 
 	if (!response.ok) {
-		throw new Error(`Failed to fetch GitHub contributions: ${response.statusText}`);
+		throw new Error(
+			`Failed to fetch GitHub contributions: ${response.statusText}`
+		);
 	}
 
 	return response.text();
@@ -51,7 +64,10 @@ async function scrapeGithubContribution(username: string, year: number): Promise
 /**
  * Parses a single contribution day.
  */
-function parseDay(day: Element, tooltip: Record<string, Element>): Contribution {
+function parseDay(
+	day: Element,
+	tooltip: Record<string, Element>
+): Contribution {
 	const id = day.getAttribute('id');
 	const date = day.getAttribute('data-date');
 	const level = day.getAttribute('data-level');
@@ -91,7 +107,9 @@ function parse(dom: string): Result {
 	};
 
 	const { document } = parseHTML(dom);
-	const dayNodes = document.querySelectorAll('.js-calendar-graph-table .ContributionCalendar-day');
+	const dayNodes = document.querySelectorAll(
+		'.js-calendar-graph-table .ContributionCalendar-day'
+	);
 
 	// Extract the total year contributions
 	const totalNode = document.querySelector('.js-yearly-contributions h2');
@@ -103,16 +121,15 @@ function parse(dom: string): Result {
 	}
 
 	// Extract tooltip information for each contribution day
-	const tooltipNodes = Array.from(document.querySelectorAll('.js-calendar-graph tool-tip')).reduce(
-		(map: Record<string, Element>, elem) => {
-			const id = elem.getAttribute('for');
-			if (id) {
-				map[id] = elem;
-			}
-			return map;
-		},
-		{}
-	);
+	const tooltipNodes = Array.from(
+		document.querySelectorAll('.js-calendar-graph tool-tip')
+	).reduce((map: Record<string, Element>, elem) => {
+		const id = elem.getAttribute('for');
+		if (id) {
+			map[id] = elem;
+		}
+		return map;
+	}, {});
 
 	dayNodes.forEach((dayNode) => {
 		try {
@@ -134,7 +151,10 @@ function parse(dom: string): Result {
 /**
  * Fetches GitHub contributions for a specific year.
  */
-async function fetchYearContributions(username: string, year: number): Promise<Result> {
+async function fetchYearContributions(
+	username: string,
+	year: number
+): Promise<Result> {
 	const dom = await scrapeGithubContribution(username, year);
 	return parse(dom);
 }

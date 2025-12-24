@@ -1,6 +1,8 @@
-import type { Plugin } from 'vite';
 import { ImageOptimizer } from '../build/image-optimizer';
-import { watch, type FSWatcher } from 'chokidar';
+
+import type { Plugin } from 'vite';
+
+import { type FSWatcher, watch } from 'chokidar';
 
 export function imageOptimizationPlugin(): Plugin {
 	let watcher: FSWatcher | null = null;

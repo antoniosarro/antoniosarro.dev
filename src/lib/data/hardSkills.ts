@@ -1,28 +1,27 @@
-import Golang from '~icons/fa6-brands/golang';
-import Typescript from '~icons/teenyicons/typescript-outline';
-import DotNet from '~icons/mdi/microsoft-dot-net';
-import Bash from '~icons/devicon-plain/bash';
-
-import Postgresql from '~icons/akar-icons/postgresql-fill';
-import MySQL from '~icons/simple-icons/mysql';
-import SQLite from '~icons/simple-icons/sqlite';
-import Redis from '~icons/cib/redis';
-
-import Svelte from '~icons/ri/svelte-fill';
-import Tailwindcss from '~icons/lineicons/tailwindcss';
 import Node from '~icons/akar-icons/node-fill';
-import Express from '~icons/simple-icons/express';
-import React from '~icons/mdi/react';
-import Nextjs from '~icons/ri/nextjs-fill';
-
+import Postgresql from '~icons/akar-icons/postgresql-fill';
 import Linux from '~icons/cib/linux';
+import Redis from '~icons/cib/redis';
+import Bash from '~icons/devicon-plain/bash';
+import Golang from '~icons/fa6-brands/golang';
+import Tailwindcss from '~icons/lineicons/tailwindcss';
+import Aws from '~icons/mdi/aws';
 import Docker from '~icons/mdi/docker';
 import Git from '~icons/mdi/git';
-import Aws from '~icons/mdi/aws';
+import DotNet from '~icons/mdi/microsoft-dot-net';
+import React from '~icons/mdi/react';
+import Nextjs from '~icons/ri/nextjs-fill';
+import Svelte from '~icons/ri/svelte-fill';
+import Express from '~icons/simple-icons/express';
+import MySQL from '~icons/simple-icons/mysql';
+import SQLite from '~icons/simple-icons/sqlite';
+import Typescript from '~icons/teenyicons/typescript-outline';
+
+import type { Component } from 'svelte';
 
 interface HardSkill {
 	title: string;
-	icon: any;
+	icon: Component;
 	href: string;
 }
 

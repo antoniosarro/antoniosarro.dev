@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Grid from '~icons/solar/widget-2-linear';
-	import List from '~icons/solar/list-linear';
 	import Book from '~icons/solar/book-2-linear';
+	import List from '~icons/solar/list-linear';
+	import Grid from '~icons/solar/widget-2-linear';
 
 	import { getBlogFilterState } from '$lib/stores/blog.svelte';
 
@@ -14,7 +14,7 @@
 	];
 </script>
 
-<div class="flex items-center gap-1 rounded-lg border border-elevation-one p-1">
+<div class="border-elevation-one flex items-center gap-1 rounded-lg border p-1">
 	{#each modes as { value, label, icon } (value)}
 		{@const Icon = icon}
 		{@const isActive = state.viewMode === value}
@@ -24,8 +24,7 @@
 				? 'bg-primary text-background'
 				: 'text-accent hover:bg-elevation-one hover:text-foreground'}"
 			aria-pressed={isActive}
-			title={label}
-		>
+			title={label}>
 			<Icon class="size-4" />
 			<span class="hidden sm:inline">{label}</span>
 		</button>

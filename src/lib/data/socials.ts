@@ -1,14 +1,16 @@
-import Github from '~icons/mdi/github';
-import X from '~icons/fa6-brands/square-x-twitter';
-import Linkedin from '~icons/mdi/linkedin';
-import Discord from '~icons/ic/baseline-discord';
 import Matrix from '~icons/cib/matrix';
+import X from '~icons/fa6-brands/square-x-twitter';
+import Discord from '~icons/ic/baseline-discord';
 import Mail from '~icons/material-symbols/mail-rounded';
+import Github from '~icons/mdi/github';
+import Linkedin from '~icons/mdi/linkedin';
+
+import type { Component } from 'svelte';
 
 export type Social = {
 	name: string;
 	url?: string;
-	icon: any;
+	icon: Component;
 };
 
 export const mail: string = 'mailto:contact@antoniosarro.dev';

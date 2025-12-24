@@ -22,8 +22,7 @@
 		data-language={language}
 		data-theme="material-theme"
 		style="display: grid;"
-		data-line-numbers-max-digits={maxDigits}
-	>
+		data-line-numbers-max-digits={maxDigits}>
 		{@html html}
 	</code>
 </Pre>

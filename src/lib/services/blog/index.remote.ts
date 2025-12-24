@@ -1,10 +1,13 @@
 import { dev } from '$app/environment';
 import { prerender } from '$app/server';
-import fs from 'fs/promises';
-import path from 'path';
-import matter from 'gray-matter';
-import type { Blog } from '$lib/types/blog';
+
 import { calculateReadingTime } from '$lib/mdx/processor';
+
+import type { Blog } from '$lib/types/blog';
+
+import fs from 'fs/promises';
+import matter from 'gray-matter';
+import path from 'path';
 
 export const getBlogs = prerender(async (): Promise<Blog[]> => {
 	try {
@@ -46,6 +49,7 @@ function isPublishableArticle(blog: Blog | null): blog is Blog {
 
 function sortByPublishDate(a: Blog, b: Blog): number {
 	return (
-		new Date(b.frontmatter.publishedAt).getTime() - new Date(a.frontmatter.publishedAt).getTime()
+		new Date(b.frontmatter.publishedAt).getTime() -
+		new Date(a.frontmatter.publishedAt).getTime()
 	);
 }

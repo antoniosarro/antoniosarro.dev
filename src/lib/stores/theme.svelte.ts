@@ -30,7 +30,8 @@ class DarkModeManager {
 		};
 
 		this.#mediaQuery.addEventListener('change', handleChange);
-		this.#cleanup = () => this.#mediaQuery?.removeEventListener('change', handleChange);
+		this.#cleanup = () =>
+			this.#mediaQuery?.removeEventListener('change', handleChange);
 	}
 
 	toggle() {

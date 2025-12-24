@@ -13,15 +13,17 @@ draft: false
 
 <div id="introduction">
 	<p>
-		In the age of drag-and-drop website builders and managed platforms, I chose to build my
-		portfolio from scratch. Not because it's easier (it's definitely not), but because building your
-		own tools teaches you things that using pre-built solutions never will.
+		In the age of drag-and-drop website builders and managed platforms, I chose
+		to build my portfolio from scratch. Not because it's easier (it's definitely
+		not), but because building your own tools teaches you things that using
+		pre-built solutions never will.
 	</p>
 	<p>
-		This article is a deep dive into how I built a high-performance portfolio using SvelteKit, with
-		a focus on performance optimization, self-hosting, and developer experience. We'll cover
-		everything from custom MDX processing to aggressive font optimization, and why I chose to
-		rebuild the entire site every night instead of making runtime API calls.
+		This article is a deep dive into how I built a high-performance portfolio
+		using SvelteKit, with a focus on performance optimization, self-hosting, and
+		developer experience. We'll cover everything from custom MDX processing to
+		aggressive font optimization, and why I chose to rebuild the entire site
+		every night instead of making runtime API calls.
 	</p>
 </div>
 
@@ -190,7 +192,9 @@ function processCustomCodeBlockHighlights(children: ElementContent[]): void {
 					return;
 				}
 
-				const textNode = innerChild.children.find((c): c is Text => c.type === 'text');
+				const textNode = innerChild.children.find(
+					(c): c is Text => c.type === 'text'
+				);
 
 				if (!textNode?.value) {
 					return;
@@ -237,7 +241,10 @@ function processCustomCodeBlockHighlights(children: ElementContent[]): void {
 Every blog post automatically gets reading time calculated based on word count:
 
 ```typescript
-export function calculateReadingTime(text: string, wordsPerMinute: number = 200): ReadingTimeStats {
+export function calculateReadingTime(
+	text: string,
+	wordsPerMinute: number = 200
+): ReadingTimeStats {
 	const words = text
 		.trim()
 		.split(/\s+/)
@@ -302,7 +309,10 @@ export class PyftsubsetOptimizer {
 
 		// Convert to unicode ranges for pyftsubset
 		return Array.from(allChars)
-			.map((char) => `U+${char.charCodeAt(0).toString(16).toUpperCase().padStart(4, '0')}`)
+			.map(
+				(char) =>
+					`U+${char.charCodeAt(0).toString(16).toUpperCase().padStart(4, '0')}`
+			)
 			.join(',');
 	}
 
@@ -378,11 +388,16 @@ Instead of client-side API calls, all data is fetched at build time using Svelte
 
 ```typescript
 export const getGithubProjects = prerender(async () => {
-	const repos = await Promise.all(projects.map((project) => fetchRepository(project.name)));
+	const repos = await Promise.all(
+		projects.map((project) => fetchRepository(project.name))
+	);
 
 	return repos
 		.filter((repo): repo is RepositoryInfo => repo !== undefined)
-		.sort((a, b) => new Date(b.lastUpdate).getTime() - new Date(a.lastUpdate).getTime());
+		.sort(
+			(a, b) =>
+				new Date(b.lastUpdate).getTime() - new Date(a.lastUpdate).getTime()
+		);
 });
 ```
 
@@ -394,29 +409,34 @@ No loading spinners, no API rate limits, no runtime JavaScript needed.
 One of my favorite features is the GitHub contribution graph, which I scrape directly from GitHub's HTML:
 
 ```typescript
-export const getGithubContributions = prerender(async (): Promise<{ [year: number]: Result }> => {
-	const username = 'antoniosarro';
-	const years = getGitHubYears(2024);
+export const getGithubContributions = prerender(
+	async (): Promise<{ [year: number]: Result }> => {
+		const username = 'antoniosarro';
+		const years = getGitHubYears(2024);
 
-	const results = await Promise.allSettled(
-		years.map(async (year) => ({
-			year,
-			data: await fetchYearContributions(username, year)
-		}))
-	);
+		const results = await Promise.allSettled(
+			years.map(async (year) => ({
+				year,
+				data: await fetchYearContributions(username, year)
+			}))
+		);
 
-	const contributions: { [year: number]: Result } = {};
+		const contributions: { [year: number]: Result } = {};
 
-	results.forEach((result) => {
-		if (result.status === 'fulfilled') {
-			contributions[result.value.year] = result.value.data;
-		}
-	});
+		results.forEach((result) => {
+			if (result.status === 'fulfilled') {
+				contributions[result.value.year] = result.value.data;
+			}
+		});
 
-	return contributions;
-});
+		return contributions;
+	}
+);
 
-async function scrapeGithubContribution(username: string, year: number): Promise<string> {
+async function scrapeGithubContribution(
+	username: string,
+	year: number
+): Promise<string> {
 	const url = `https://github.com/users/${username}/contributions?from=${year}-01-01&to=${year}-12-31`;
 	const response = await fetch(url);
 	return response.text();
@@ -633,8 +653,7 @@ The blog system includes several advanced features:
 	repoId={PUBLIC_GISCUS_REPO_ID}
 	category="Announcements"
 	categoryId={PUBLIC_GISCUS_CATEGORY_ID}
-	theme={darkMode.value ? 'transparent_dark' : 'light'}
-/>
+	theme={darkMode.value ? 'transparent_dark' : 'light'} />
 ```
 
 **RSS feed**: Automatically generated from blog posts
@@ -710,7 +729,9 @@ const repositoryPayloadSchema = z.object({
 	updated_at: z.string()
 });
 
-export function isRepositoryPayload(data: unknown): data is RepositoryPayloadSchema {
+export function isRepositoryPayload(
+	data: unknown
+): data is RepositoryPayloadSchema {
 	return repositoryPayloadSchema.safeParse(data).success;
 }
 ```

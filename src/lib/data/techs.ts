@@ -1,10 +1,12 @@
+import MdiTailwind from '~icons/mdi/tailwind';
 import RiSvelteFill from '~icons/ri/svelte-fill';
 import TeenyiconsTypescriptOutline from '~icons/teenyicons/typescript-outline';
-import MdiTailwind from '~icons/mdi/tailwind';
+
+import type { Component } from 'svelte';
 
 interface TechStack {
 	href: string;
-	icon: any;
+	icon: Component;
 	label: string;
 	name: string;
 }

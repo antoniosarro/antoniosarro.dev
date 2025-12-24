@@ -1,14 +1,15 @@
 <script lang="ts">
-	import { hardSkills } from '$lib/data/hardSkills';
-	import { onMount } from 'svelte';
+	import { type Component, onMount } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
+
+	import { hardSkills } from '$lib/data/hardSkills';
 
 	interface Node {
 		id: string;
 		label: string;
 		category: string;
 		categoryOrder: number;
-		icon: any;
+		icon: Component;
 		href: string;
 		x: number;
 		y: number;
@@ -122,7 +123,10 @@
 	function initializeNodes() {
 		const allNodes: Node[] = [];
 		const allConnections: Connection[] = [];
-		const totalItems = hardSkills.reduce((acc, cat) => acc + cat.items.length, 0);
+		const totalItems = hardSkills.reduce(
+			(acc, cat) => acc + cat.items.length,
+			0
+		);
 		let itemIndex = 0;
 
 		hardSkills.forEach((category) => {
@@ -151,7 +155,10 @@
 		allNodes.forEach((node) => {
 			node.connections.forEach((targetId) => {
 				const key = [node.id, targetId].sort().join('|');
-				if (!connectionSet.has(key) && allNodes.find((n) => n.id === targetId)) {
+				if (
+					!connectionSet.has(key) &&
+					allNodes.find((n) => n.id === targetId)
+				) {
 					connectionSet.add(key);
 					allConnections.push({
 						source: node.id,
@@ -203,13 +210,15 @@
 		const nodeMap = new Map(nodes.map((n) => [n.id, n]));
 
 		const treePositions = getTreePositions();
-		const nodesInTree = treePositions ? new Set(treePositions.keys()) : new Set();
+		const nodesInTree = treePositions
+			? new Set(treePositions.keys())
+			: new Set();
 
 		nodes = nodes.map((node) => {
 			if (draggedNode === node.id) return node;
 
 			if (treePositions && treePositions.has(node.id)) {
-				const target = treePositions.get(node.id)!;
+				const target = treePositions.get(node.id);
 				const lerpFactor = 0.2;
 				const newX = node.x + (target.x - node.x) * lerpFactor;
 				const newY = node.y + (target.y - node.y) * lerpFactor;
@@ -357,7 +366,9 @@
 		const clampedY = Math.max(padding, Math.min(height - padding, y));
 
 		nodes = nodes.map((node) =>
-			node.id === draggedNode ? { ...node, x: clampedX, y: clampedY, vx: 0, vy: 0 } : node
+			node.id === draggedNode
+				? { ...node, x: clampedX, y: clampedY, vx: 0, vy: 0 }
+				: node
 		);
 		hasDragged = true;
 	}
@@ -470,7 +481,8 @@
 
 		if (selectedNode && treeSet.has(hoveredNode)) return 0.2;
 
-		const isConnectedToHovered = conn.source === hoveredNode || conn.target === hoveredNode;
+		const isConnectedToHovered =
+			conn.source === hoveredNode || conn.target === hoveredNode;
 
 		return isConnectedToHovered ? 0.8 : 0.05;
 	}
@@ -480,14 +492,19 @@
 
 		if (selectedNode && treeSet.has(conn.source) && treeSet.has(conn.target)) {
 			const selectedNodeData = nodes.find((n) => n.id === selectedNode);
-			return selectedNodeData ? categoryColors[selectedNodeData.category] : 'var(--foreground)';
+			return selectedNodeData
+				? categoryColors[selectedNodeData.category]
+				: 'var(--foreground)';
 		}
 
 		if (hoveredNode && (!selectedNode || !treeSet.has(hoveredNode))) {
 			if (conn.source === hoveredNode || conn.target === hoveredNode) {
-				const neighborId = conn.source === hoveredNode ? conn.target : conn.source;
+				const neighborId =
+					conn.source === hoveredNode ? conn.target : conn.source;
 				const neighborNode = nodes.find((n) => n.id === neighborId);
-				return neighborNode ? categoryColors[neighborNode.category] : 'var(--foreground)';
+				return neighborNode
+					? categoryColors[neighborNode.category]
+					: 'var(--foreground)';
 			}
 		}
 
@@ -518,12 +535,11 @@
 
 <div
 	bind:this={container}
-	class="relative w-full overflow-hidden rounded-xl border border-elevation-one bg-background"
+	class="border-elevation-one bg-background relative w-full overflow-hidden rounded-xl border"
 	style="height: {height}px"
 	role="img"
 	aria-label="Interactive tech stack visualization"
-	onclick={handleContainerClick}
->
+	onclick={handleContainerClick}>
 	<!-- Background graph connections -->
 	<svg class="pointer-events-none absolute inset-0 h-full w-full">
 		{#each connections as conn (conn.source + '-' + conn.target)}
@@ -540,20 +556,18 @@
 					stroke={getConnectionColor(conn)}
 					stroke-width={selectedNode ? 2 : 1.5}
 					opacity={getConnectionOpacity(conn)}
-					class="transition-all duration-300"
-				/>
+					class="transition-all duration-300" />
 			{/if}
 		{/each}
 	</svg>
 
 	<!-- Sidebar panel -->
 	<div
-		class="absolute top-0 right-0 bottom-0 z-10 w-64 overflow-hidden border-l border-elevation-one backdrop-blur-sm transition-transform duration-500 ease-in-out"
+		class="border-elevation-one absolute top-0 right-0 bottom-0 z-10 w-64 overflow-hidden border-l backdrop-blur-sm transition-transform duration-500 ease-in-out"
 		style="transform: translateX({selectedNode
 			? '0%'
 			: '100%'}); background-color: rgba(var(--background, 0, 0, 0), 0.95);"
-		onclick={(e) => e.stopPropagation()}
-	>
+		onclick={(e) => e.stopPropagation()}>
 		{#if selectedNode}
 			{@const { root, children } = getOrganizedTreeNodes()}
 			{#if root}
@@ -564,25 +578,24 @@
 					<!-- Root node -->
 					<button
 						class="group flex w-full items-center gap-3 rounded-xl p-3 text-left transition-all duration-200"
-						style="background-color: {isRootHovered ? 'rgba(255, 255, 255, 0.05)' : 'transparent'};"
+						style="background-color: {isRootHovered
+							? 'rgba(255, 255, 255, 0.05)'
+							: 'transparent'};"
 						onmouseenter={() => (hoveredTreeNode = root.id)}
 						onmouseleave={() => (hoveredTreeNode = null)}
-						onclick={() => window.open(root.href, '_blank')}
-					>
+						onclick={() => window.open(root.href, '_blank')}>
 						<div
-							class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 bg-background transition-all duration-200"
+							class="bg-background flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 transition-all duration-200"
 							style="
                                 border-color: {rootColor};
                                 box-shadow: 0 0 20px {rootColor}40;
-                            "
-						>
+                            ">
 							<root.icon class="h-6 w-6" style="color: {rootColor}" />
 						</div>
 						<div class="flex min-w-0 flex-1 flex-col">
 							<span
 								class="truncate text-sm font-semibold transition-all duration-200"
-								style="color: {rootColor}"
-							>
+								style="color: {rootColor}">
 								{root.label}
 							</span>
 							<span class="text-muted-foreground text-xs">{root.category}</span>
@@ -591,19 +604,19 @@
 							class="h-4 w-4 shrink-0 transition-all duration-200"
 							style="
                                 opacity: {isRootHovered ? 1 : 0};
-                                transform: translateX({isRootHovered ? '0' : '-0.5rem'});
+                                transform: translateX({isRootHovered
+								? '0'
+								: '-0.5rem'});
                                 color: {rootColor};
                             "
 							fill="none"
 							stroke="currentColor"
-							viewBox="0 0 24 24"
-						>
+							viewBox="0 0 24 24">
 							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"
 								stroke-width="2"
-								d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-							/>
+								d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
 						</svg>
 					</button>
 
@@ -611,13 +624,13 @@
 					<div class="my-3 flex items-center gap-2 px-2">
 						<div
 							class="h-px flex-1"
-							style="background: linear-gradient(to right, {rootColor}60, transparent)"
-						></div>
+							style="background: linear-gradient(to right, {rootColor}60, transparent)">
+						</div>
 						<span class="text-muted-foreground text-xs">Connected</span>
 						<div
 							class="h-px flex-1"
-							style="background: linear-gradient(to left, {rootColor}60, transparent)"
-						></div>
+							style="background: linear-gradient(to left, {rootColor}60, transparent)">
+						</div>
 					</div>
 
 					<!-- Children list with tree lines -->
@@ -628,8 +641,8 @@
 							style="
                                 background: linear-gradient(to bottom, {rootColor}60, {rootColor}20);
                                 height: {children.length * 48 - 24}px;
-                            "
-						></div>
+                            ">
+						</div>
 
 						<!-- Child nodes -->
 						<div class="flex flex-col gap-1">
@@ -644,24 +657,27 @@
 										: 'transparent'};"
 									onmouseenter={() => (hoveredTreeNode = child.id)}
 									onmouseleave={() => (hoveredTreeNode = null)}
-									onclick={() => window.open(child.href, '_blank')}
-								>
+									onclick={() => window.open(child.href, '_blank')}>
 									<!-- Horizontal branch line -->
 									<div
 										class="absolute left-6 h-0.5 w-4 rounded-full transition-all duration-200"
-										style="background-color: {isHovered ? childColor : rootColor}40;"
-									></div>
+										style="background-color: {isHovered
+											? childColor
+											: rootColor}40;">
+									</div>
 
 									<!-- Node dot on the line -->
 									<div
-										class="absolute left-5 h-2.5 w-2.5 rounded-full border-2 bg-background transition-all duration-200"
+										class="bg-background absolute left-5 h-2.5 w-2.5 rounded-full border-2 transition-all duration-200"
 										style="
-                                            border-color: {isHovered ? childColor : rootColor}80;
+                                            border-color: {isHovered
+											? childColor
+											: rootColor}80;
                                             box-shadow: {isHovered
 											? `0 0 8px ${childColor}60`
 											: 'none'};
-                                        "
-									></div>
+                                        ">
+									</div>
 
 									<div
 										class="ml-6 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border transition-all duration-200"
@@ -675,12 +691,12 @@
                                             box-shadow: {isHovered
 											? `0 0 12px ${childColor}30`
 											: 'none'};
-                                        "
-									>
+                                        ">
 										<child.icon
 											class="h-4 w-4 transition-colors duration-200"
-											style="color: {isHovered ? childColor : 'var(--foreground)'}"
-										/>
+											style="color: {isHovered
+												? childColor
+												: 'var(--foreground)'}" />
 									</div>
 
 									<div class="flex min-w-0 flex-1 flex-col">
@@ -690,9 +706,10 @@
                                                 color: {isHovered
 												? childColor
 												: 'var(--foreground)'};
-                                                font-weight: {isHovered ? 500 : 400};
-                                            "
-										>
+                                                font-weight: {isHovered
+												? 500
+												: 400};
+                                            ">
 											{child.label}
 										</span>
 										<span
@@ -700,8 +717,7 @@
 											style="
                                                 opacity: {isHovered ? 1 : 0};
                                                 color: {childColor}80;
-                                            "
-										>
+                                            ">
 											{child.category}
 										</span>
 									</div>
@@ -710,19 +726,19 @@
 										class="h-3.5 w-3.5 shrink-0 transition-all duration-200"
 										style="
                                             opacity: {isHovered ? 1 : 0};
-                                            transform: translateX({isHovered ? '0' : '-0.5rem'});
+                                            transform: translateX({isHovered
+											? '0'
+											: '-0.5rem'});
                                             color: {childColor};
                                         "
 										fill="none"
 										stroke="currentColor"
-										viewBox="0 0 24 24"
-									>
+										viewBox="0 0 24 24">
 										<path
 											stroke-linecap="round"
 											stroke-linejoin="round"
 											stroke-width="2"
-											d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-										/>
+											d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
 									</svg>
 								</button>
 							{/each}
@@ -730,7 +746,7 @@
 					</div>
 
 					<!-- Footer hint -->
-					<div class="mt-auto border-t border-elevation-one pt-3">
+					<div class="border-elevation-one mt-auto border-t pt-3">
 						<p class="text-muted-foreground text-center text-xs">
 							Click to visit • Click outside to close
 						</p>
@@ -770,12 +786,13 @@
 				onmouseleave={() => (hoveredNode = null)}
 				onmousedown={(e) => handleNodeMouseDown(node.id, e)}
 				onclick={(e) => handleNodeClick(node.id, node.href, e)}
-				ondblclick={(e) => handleDoubleClick(node.id, node.href, e)}
-			>
+				ondblclick={(e) => handleDoubleClick(node.id, node.href, e)}>
 				<div
-					class="flex h-12 w-12 items-center justify-center rounded-xl border-2 bg-background transition-all duration-200"
+					class="bg-background flex h-12 w-12 items-center justify-center rounded-xl border-2 transition-all duration-200"
 					style="
-				border-color: {isActive || isRelated ? categoryColors[node.category] : 'var(--elevation-one)'};
+				border-color: {isActive || isRelated
+						? categoryColors[node.category]
+						: 'var(--elevation-one)'};
 				box-shadow: {isActive
 						? `0 0 0 3px ${categoryColors[node.category]}40, 0 4px 20px ${categoryColors[node.category]}50`
 						: isRelated
@@ -783,23 +800,22 @@
 							: 'none'};
 				opacity: {isUnrelated ? 0.3 : 1};
 				filter: {isUnrelated ? 'blur(1px) grayscale(1)' : 'none'};
-			"
-				>
+			">
 					<Icon
 						class="h-6 w-6 transition-colors duration-200"
 						style="color: {isActive || isRelated
 							? categoryColors[node.category]
-							: 'var(--foreground)'}"
-					/>
+							: 'var(--foreground)'}" />
 				</div>
 				<span
 					class="rounded px-1.5 py-0.5 text-xs font-medium whitespace-nowrap backdrop-blur-sm transition-all duration-200"
 					style="
-				color: {isActive || isRelated ? categoryColors[node.category] : 'var(--foreground)'};
+				color: {isActive || isRelated
+						? categoryColors[node.category]
+						: 'var(--foreground)'};
 				background-color: rgba(var(--background, 0, 0, 0), 0.9);
 				opacity: {isUnrelated ? 0.4 : 1};
-			"
-				>
+			">
 					{node.label}
 				</span>
 			</button>
@@ -808,16 +824,17 @@
 
 	<!-- Legend -->
 	<div
-		class="absolute bottom-4 left-4 flex flex-wrap gap-3 rounded-lg border border-elevation-one p-2 backdrop-blur-sm transition-opacity duration-300"
+		class="border-elevation-one absolute bottom-4 left-4 flex flex-wrap gap-3 rounded-lg border p-2 backdrop-blur-sm transition-opacity duration-300"
 		style="
         opacity: {selectedNode ? 0.2 : 1};
         background-color: rgba(var(--background, 0, 0, 0), 0.9);
-    "
-	>
+    ">
 		{#each hardSkills as category (category.key)}
 			<div class="flex items-center gap-1.5">
-				<span class="h-3 w-3 rounded-full" style="background-color: {categoryColors[category.key]}"
-				></span>
+				<span
+					class="h-3 w-3 rounded-full"
+					style="background-color: {categoryColors[category.key]}">
+				</span>
 				<span class="text-xs font-medium">{category.key}</span>
 			</div>
 		{/each}
@@ -825,9 +842,8 @@
 
 	<!-- Instructions -->
 	<div
-		class="text-muted-foreground absolute top-4 left-4 z-50 rounded-lg border border-elevation-one px-3 py-1.5 text-xs backdrop-blur-sm"
-		style="background-color: rgba(var(--background, 0, 0, 0), 0.9);"
-	>
+		class="text-muted-foreground border-elevation-one absolute top-4 left-4 z-50 rounded-lg border px-3 py-1.5 text-xs backdrop-blur-sm"
+		style="background-color: rgba(var(--background, 0, 0, 0), 0.9);">
 		Drag nodes • Click to select • Double-click to visit
 	</div>
 </div>

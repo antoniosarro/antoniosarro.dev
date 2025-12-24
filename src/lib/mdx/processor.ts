@@ -1,20 +1,22 @@
-import { unified } from 'unified';
-import remarkParse from 'remark-parse';
-import remarkRehype from 'remark-rehype';
-import rehypeStringify from 'rehype-stringify';
-import rehypeSlug from 'rehype-slug';
+import { rehypeOptimizeImages } from './image-transformer';
+
+import type { Element, ElementContent, Root, Text } from 'hast';
+import type { Plugin } from 'unified';
+import type { Node } from 'unist';
+
+import { transformerNotationHighlight } from '@shikijs/transformers';
+import fs from 'fs';
+import { toHtml } from 'hast-util-to-html';
+import path from 'path';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypePrettyCode from 'rehype-pretty-code';
-import { transformerNotationHighlight } from '@shikijs/transformers';
+import rehypeSlug from 'rehype-slug';
+import rehypeStringify from 'rehype-stringify';
+import remarkParse from 'remark-parse';
+import remarkRehype from 'remark-rehype';
 import { getSingletonHighlighter } from 'shiki';
+import { unified } from 'unified';
 import { visit } from 'unist-util-visit';
-import { toHtml } from 'hast-util-to-html';
-import type { Plugin } from 'unified';
-import type { Root, Element, Text, ElementContent } from 'hast';
-import type { Node } from 'unist';
-import fs from 'fs';
-import path from 'path';
-import { rehypeOptimizeImages } from './image-transformer';
 
 // ============================
 // Types
@@ -99,8 +101,18 @@ interface ExtendedNode extends Node {
 
 const HEADING_TAGS = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] as const;
 const DEFAULT_WORDS_PER_MINUTE = 200;
-const ADD_HIGHLIGHT_PATTERNS = ['# ++add', '// ++add', '#++add', '//++add'] as const;
-const REMOVE_HIGHLIGHT_PATTERNS = ['# --del', '// --del', '#--del', '//--del'] as const;
+const ADD_HIGHLIGHT_PATTERNS = [
+	'# ++add',
+	'// ++add',
+	'#++add',
+	'//++add'
+] as const;
+const REMOVE_HIGHLIGHT_PATTERNS = [
+	'# --del',
+	'// --del',
+	'#--del',
+	'//--del'
+] as const;
 
 // ============================
 // Utility Functions
@@ -360,7 +372,9 @@ function rehypeHandleMetadata(): Plugin<[], Root> {
 				preElement.properties = preElement.properties || {};
 
 				// Extract title text from figcaption children
-				const titleText = figcaption.children.find((child): child is Text => child.type === 'text');
+				const titleText = figcaption.children.find(
+					(child): child is Text => child.type === 'text'
+				);
 				if (titleText?.value) {
 					preElement.properties.title = titleText.value;
 				} else {
@@ -369,11 +383,14 @@ function rehypeHandleMetadata(): Plugin<[], Root> {
 
 				// Extract language and theme from figcaption properties
 				if (figcaption.properties?.['data-language']) {
-					preElement.properties.language = figcaption.properties['data-language'];
-					preElement.properties['data-language'] = figcaption.properties['data-language'];
+					preElement.properties.language =
+						figcaption.properties['data-language'];
+					preElement.properties['data-language'] =
+						figcaption.properties['data-language'];
 				}
 				if (figcaption.properties?.['data-theme']) {
-					preElement.properties['data-theme'] = figcaption.properties['data-theme'];
+					preElement.properties['data-theme'] =
+						figcaption.properties['data-theme'];
 				}
 			} else {
 			}
@@ -390,10 +407,12 @@ function rehypeHandleMetadata(): Plugin<[], Root> {
 
 				codeElement.properties = codeElement.properties || {};
 				if (preElement.properties?.language) {
-					codeElement.properties['data-language'] = preElement.properties.language;
+					codeElement.properties['data-language'] =
+						preElement.properties.language;
 				}
 				if (preElement.properties?.['data-theme']) {
-					codeElement.properties['data-theme'] = preElement.properties['data-theme'];
+					codeElement.properties['data-theme'] =
+						preElement.properties['data-theme'];
 				}
 
 				if (codeElement.properties['data-line-numbers'] !== undefined) {
@@ -418,7 +437,8 @@ function rehypeRemoveFigcaptions(): Plugin<[], Root> {
 		visit(tree, 'element', (node: Element) => {
 			if (node.children) {
 				node.children = node.children.filter(
-					(child) => !(child.type === 'element' && child.tagName === 'figcaption')
+					(child) =>
+						!(child.type === 'element' && child.tagName === 'figcaption')
 				);
 			}
 		});
@@ -450,7 +470,9 @@ function processCustomCodeBlockHighlights(children: ElementContent[]): void {
 					return;
 				}
 
-				const textNode = innerChild.children.find((c): c is Text => c.type === 'text');
+				const textNode = innerChild.children.find(
+					(c): c is Text => c.type === 'text'
+				);
 
 				if (!textNode?.value) {
 					return;
@@ -596,7 +618,9 @@ try {
 		imageMetadata = JSON.parse(fs.readFileSync(metaPath, 'utf-8'));
 	}
 } catch (e) {
-	console.warn('⚠️ Could not load image metadata. Images will not have intrinsic size.');
+	console.warn(
+		'⚠️ Could not load image metadata. Images will not have intrinsic size.'
+	);
 }
 
 // ============================

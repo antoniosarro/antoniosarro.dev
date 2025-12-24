@@ -1,4 +1,4 @@
-import { PATHS, logger, fileUtils } from './build/utils';
+import { fileUtils, logger, PATHS } from './build/utils';
 
 function main(): void {
 	try {

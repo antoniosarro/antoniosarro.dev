@@ -1,9 +1,14 @@
 <script lang="ts">
 	import { DEFAULT_LABELS } from '$lib/constants/calendar';
 	import { darkMode } from '$lib/stores/theme.svelte';
-	import type { Result } from '$lib/types/github/contributions';
-	import { getDimensions, getMonthLabels, groupByWeeks } from '$lib/utils/calendar';
+	import {
+		getDimensions,
+		getMonthLabels,
+		groupByWeeks
+	} from '$lib/utils/calendar';
 	import { range } from '$lib/utils/generic';
+
+	import type { Result } from '$lib/types/github/contributions';
 
 	const { data, year }: { data: Result; year: number } = $props();
 
@@ -19,7 +24,9 @@
 	} as const;
 
 	const weeks = $derived(groupByWeeks(data.days, WEEK_START));
-	const dimensions = $derived(getDimensions(weeks, BLOCK_SIZE, BLOCK_MARGIN, LABEL_HEIGHT));
+	const dimensions = $derived(
+		getDimensions(weeks, BLOCK_SIZE, BLOCK_MARGIN, LABEL_HEIGHT)
+	);
 	const monthLabels = $derived(getMonthLabels(weeks, DEFAULT_LABELS.months));
 	const colors = $derived(darkMode.value ? THEME.dark : THEME.light);
 
@@ -41,16 +48,14 @@
 		<svg
 			width={dimensions.width}
 			height={dimensions.height}
-			viewBox="0 0 {dimensions.width} {dimensions.height}"
-		>
+			viewBox="0 0 {dimensions.width} {dimensions.height}">
 			<g>
 				{#each monthLabels as { label, weekIndex } (weekIndex)}
 					<text
 						x={(BLOCK_SIZE + BLOCK_MARGIN) * weekIndex}
 						y={0}
 						dominant-baseline="hanging"
-						fill="currentColor"
-					>
+						fill="currentColor">
 						{label}
 					</text>
 				{/each}
@@ -69,8 +74,7 @@
 								ry={2}
 								fill={colors[day.level]}
 								data-date={day.date}
-								data-level={day.level}
-							>
+								data-level={day.level}>
 								<title>{getActivityLabel(day.count)} on {day.date}</title>
 							</rect>
 						{/if}
@@ -93,8 +97,7 @@
 						height={BLOCK_SIZE}
 						rx={2}
 						ry={2}
-						class="stroke-elevation-one"
-					/>
+						class="stroke-elevation-one" />
 				</svg>
 			{/each}
 			<span>More</span>
