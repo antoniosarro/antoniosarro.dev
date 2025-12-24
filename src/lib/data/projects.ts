@@ -4,6 +4,10 @@ export interface ProjectWithArticle {
 }
 
 export const projects: ProjectWithArticle[] = [
+	{ name: 'gofi', hasArticle: false },
+	{ name: 'yagbc', hasArticle: false },
+	{ name: 'rdplauncher', hasArticle: false },
+	{ name: 'reltrace', hasArticle: false },
 	{ name: 'FreeTube', hasArticle: false },
 	{ name: 'antoniosarro.dev', hasArticle: false },
 	{ name: 'immich', hasArticle: false },

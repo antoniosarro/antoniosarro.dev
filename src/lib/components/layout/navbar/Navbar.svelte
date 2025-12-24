@@ -30,7 +30,7 @@
 			</ul>
 		</nav>
 		<div class="flex items-center gap-x-4">
-			<Theme />
+			<!-- <Theme /> -->
 			<Mobile />
 		</div>
 	</div>

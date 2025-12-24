@@ -14,6 +14,10 @@ class DarkModeManager {
 	}
 
 	init() {
+		this.#value = true;
+		this.#apply();
+		return;
+
 		const attributeTheme = this.#getThemeFromAttribute();
 		if (attributeTheme !== null) {
 			this.#value = attributeTheme;
