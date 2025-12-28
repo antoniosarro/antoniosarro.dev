@@ -125,11 +125,11 @@ export function rehypeOptimizeImages(): Plugin<[], Root> {
 					type: 'element',
 					tagName: 'picture',
 					properties: {
-						class: 'optimized-image'
+						class: 'optimized-image',
+						'data-zoomable': 'true' // Add this for easier targeting
 					},
 					children: [...sources, imgElement]
 				};
-
 				parent.children[index] = picture;
 			} else {
 				// Just update the img properties

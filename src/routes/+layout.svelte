@@ -65,8 +65,8 @@
 <Toaster position="bottom-center" theme={darkMode.value ? 'dark' : 'light'} />
 <Cursor />
 
-<Snow/>
-<Fireworks/>
+<Snow />
+<Fireworks />
 
 <Navbar />
 {#if children}

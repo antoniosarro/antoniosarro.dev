@@ -85,7 +85,8 @@
 			this.speed = Math.random() * 2 + 3;
 			this.particles = [];
 			this.exploded = false;
-			this.color = Firework.COLORS[Math.floor(Math.random() * Firework.COLORS.length)];
+			this.color =
+				Firework.COLORS[Math.floor(Math.random() * Firework.COLORS.length)];
 		}
 
 		update(): void {

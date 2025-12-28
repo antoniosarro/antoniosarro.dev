@@ -130,3 +130,13 @@
 	overflow-wrap: break-word;
 	border-radius: 0.375rem;
 }
+
+.zoomable-image-container {
+	display: block;
+	width: 100%;
+}
+
+.mdsvex .zoomable-image-container img {
+	border-radius: 0.5rem;
+	border: 1px solid var(--elevation-one);
+}
