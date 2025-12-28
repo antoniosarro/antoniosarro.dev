@@ -5,6 +5,25 @@ All notable changes to antoniosarro.dev are documented here. Check it out at ant
 ---
 
 <!--CHANGELOG_ENTRY_START-->
+## [1.0.2] - 2025-12-28
+@@commit:3ba7fed83f22e54db20ae16c90496c7f821f3b72@@
+@@title:Enhanced Blog Posts: Zoomable Images and Directory Trees!@@
+
+Elevate your blog posts with interactive features! This release introduces zoomable images for detailed viewing and a new Directory Tree component for clear file structure visualization.
+
+### ::added::
+- **New component with modal zoom overlay and keyboard support** @@hash:204ff2e@@
+  ``src/lib/components/mdx/ZoomableImage.svelte``
+- **New component for rendering file/folder structures with emoji icons** @@hash:204ff2e@@
+  ``src/lib/components/mdx/DirectoryTree.svelte``
+- **Added replaceImages and replaceDirectoryTrees functions** @@hash:204ff2e@@
+  ``src/lib/components/mdx/MDXContent.svelte``
+- **Added ludoplex project** @@hash:204ff2e@@
+  ``src/lib/data/projects.ts``
+
+<!--CHANGELOG_ENTRY_END-->
+
+<!--CHANGELOG_ENTRY_START-->
 
 ## [1.0.1] - 2025-12-24
 
