@@ -5,11 +5,13 @@
 	import { mount, unmount } from 'svelte';
 
 	import AWrapper from './wrappers/AWrapper.svelte';
+	import DirectoryTreeWrapper from './wrappers/DirectoryTreeWrapper.svelte';
 	import H2Wrapper from './wrappers/H2Wrapper.svelte';
 	import H3Wrapper from './wrappers/H3Wrapper.svelte';
 	import OlWrapper from './wrappers/OlWrapper.svelte';
 	import PreWrapper from './wrappers/PreWrapper.svelte';
 	import UlWrapper from './wrappers/UlWrapper.svelte';
+	import ZoomableImageWrapper from './wrappers/ZoomableImageWrapper.svelte';
 
 	interface Props {
 		html: string;
@@ -33,6 +35,8 @@
 		replaceLinks();
 		replaceLists();
 		replaceCodeBlocks();
+		replaceDirectoryTrees();
+		replaceImages();
 	});
 
 	onDestroy(() => {
@@ -145,6 +149,87 @@
 					html: codeBlock.code,
 					showLineNumbers: showLineNumbers,
 					maxDigits: maxDigits ? parseInt(maxDigits) : undefined
+				}
+			});
+			mountedComponents.push(component);
+		});
+	}
+
+	function replaceDirectoryTrees() {
+		const treeElements = container.querySelectorAll('directory-tree');
+		treeElements.forEach((el) => {
+			const structure = el.getAttribute('structure') || '';
+			const title = el.getAttribute('title') || undefined;
+			const placeholder = document.createElement('div');
+			el.parentNode?.replaceChild(placeholder, el);
+			const component = mount(DirectoryTreeWrapper, {
+				target: placeholder,
+				props: { structure, title }
+			});
+			mountedComponents.push(component);
+		});
+	}
+
+	function replaceImages() {
+		// Target both picture elements and standalone img elements
+		const pictures = container.querySelectorAll('picture.optimized-image');
+		const standaloneImages = container.querySelectorAll(
+			'img:not(picture img):not(.zoomable-image-trigger img)'
+		);
+
+		// Replace picture elements
+		pictures.forEach((picture) => {
+			const img = picture.querySelector('img');
+			if (!img) return;
+
+			const src = img.getAttribute('src') || '';
+			const alt = img.getAttribute('alt') || '';
+			const width = img.getAttribute('width');
+			const height = img.getAttribute('height');
+
+			const placeholder = document.createElement('div');
+			placeholder.className = 'zoomable-image-container my-4';
+			picture.parentNode?.replaceChild(placeholder, picture);
+
+			const component = mount(ZoomableImageWrapper, {
+				target: placeholder,
+				props: {
+					src,
+					alt,
+					width: width ? parseInt(width) : undefined,
+					height: height ? parseInt(height) : undefined
+				}
+			});
+			mountedComponents.push(component);
+		});
+
+		// Replace standalone images
+		standaloneImages.forEach((img) => {
+			const src = img.getAttribute('src') || '';
+			const alt = img.getAttribute('alt') || '';
+			const width = img.getAttribute('width');
+			const height = img.getAttribute('height');
+
+			// Skip if already processed or is an avatar/icon
+			if (
+				img.closest('.zoomable-image-container') ||
+				img.classList.contains('rounded-full') ||
+				(width && parseInt(width) < 100)
+			) {
+				return;
+			}
+
+			const placeholder = document.createElement('div');
+			placeholder.className = 'zoomable-image-container my-4';
+			img.parentNode?.replaceChild(placeholder, img);
+
+			const component = mount(ZoomableImageWrapper, {
+				target: placeholder,
+				props: {
+					src,
+					alt,
+					width: width ? parseInt(width) : undefined,
+					height: height ? parseInt(height) : undefined
 				}
 			});
 			mountedComponents.push(component);

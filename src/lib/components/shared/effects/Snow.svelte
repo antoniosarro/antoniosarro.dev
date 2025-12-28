@@ -38,23 +38,26 @@
 			(month > startDate.month && month < endDate.month);
 
 		if (isChristmasSeason) {
-			snowflakes = Array.from({ length: count }, (_, i): Snowflake => ({
-				id: i,
-				left: Math.random() * 100,
-				delay: Math.random() * 5,
-				duration: 5 + Math.random() * 5,
-				size: 3 + Math.random() * 5,
-				opacity: 0.4 + Math.random() * 0.4
-			}));
+			snowflakes = Array.from(
+				{ length: count },
+				(_, i): Snowflake => ({
+					id: i,
+					left: Math.random() * 100,
+					delay: Math.random() * 5,
+					duration: 5 + Math.random() * 5,
+					size: 3 + Math.random() * 5,
+					opacity: 0.4 + Math.random() * 0.4
+				})
+			);
 		}
 	});
 </script>
 
 {#if isChristmasSeason}
-	<div class="fixed inset-0 pointer-events-none overflow-hidden z-9999">
+	<div class="pointer-events-none fixed inset-0 z-9999 overflow-hidden">
 		{#each snowflakes as flake (flake.id)}
 			<div
-				class="absolute -top-2.5 bg-white rounded-full shadow-[0_0_4px_rgba(255,255,255,0.8)] animate-fall"
+				class="animate-fall absolute -top-2.5 rounded-full bg-white shadow-[0_0_4px_rgba(255,255,255,0.8)]"
 				style="
 					left: {flake.left}%;
 					animation-delay: {flake.delay}s;
@@ -62,8 +65,8 @@
 					width: {flake.size}px;
 					height: {flake.size}px;
 					opacity: {flake.opacity};
-				"
-			></div>
+				">
+			</div>
 		{/each}
 	</div>
 {/if}

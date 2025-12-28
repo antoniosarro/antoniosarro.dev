@@ -21,5 +21,6 @@ export const projects: ProjectWithArticle[] = [
 	{ name: 'cfp-vercel-form', hasArticle: false },
 	{ name: 'reforged-mars', hasArticle: false },
 	{ name: 'saint-tracker', hasArticle: false },
-	{ name: 'komodo', hasArticle: false }
+	{ name: 'komodo', hasArticle: false },
+	{ name: 'ludoplex', hasArticle: false }
 ];

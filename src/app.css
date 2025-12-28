@@ -54,7 +54,8 @@
 		}
 		15% {
 			opacity: 1;
-			transform: translate(calc(var(--tx) * 0.3), calc(var(--ty) * 0.3)) scale(1);
+			transform: translate(calc(var(--tx) * 0.3), calc(var(--ty) * 0.3))
+				scale(1);
 		}
 		100% {
 			opacity: 0;

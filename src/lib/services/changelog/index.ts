@@ -112,7 +112,7 @@ function parseEntry(content: string): ChangelogEntry | null {
 				type,
 				description: changeDescription,
 				...(changeHash && { commitHash: changeHash }),
-				...(components.length && { components: components }),
+				...(components.length && { components: components })
 			});
 		}
 	}
