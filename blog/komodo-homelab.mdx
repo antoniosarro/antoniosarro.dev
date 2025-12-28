@@ -1,0 +1,594 @@
+---
+title: 'Self-Hosted Container Management with Komodo: Your Own Deployment Platform in Docker'
+description: 'Learn how to deploy Komodo, a powerful self-hosted container and server management platform, using Docker in your homelab. Complete guide covering Core installation, Periphery agents, and Builder setup for a full CI/CD pipeline.'
+publishedAt: '2025-12-28'
+image: '/images/blogs/komodo-homelab/thumbnail.avif'
+tags:
+  - Komodo
+  - Docker
+  - Homelab
+  - Self-Hosted
+  - DevOps
+draft: false
+series: 'homelab'
+seriesOrder: 2
+---
+
+<div id="introduction">
+	<p>
+		Managing containers across multiple servers in a homelab (or not) can quickly become
+		overwhelming. Keeping track of what's running where, updating services,
+		and maintaining consistency becomes a juggling act as your infrastructure
+		grows.
+	</p>
+	<p>
+		Komodo is a self-hosted platform that brings
+		order to this chaos. It provides a unified interface for managing Docker
+		containers, building images, and orchestrating deployments across your
+		entire homelab. In this guide, we'll walk through setting up Komodo with
+		a complete CI/CD pipeline that integrates with the Forgejo instance we
+		deployed in the previous article.
+	</p>
+</div>
+
+## What is Komodo
+
+[Komodo](https://komo.do/) is an <span class="font-semibold text-primary">open-source</span>,
+self-hosted platform for managing servers, containers, and deployments. Think of it as your personal
+Portainer alternative with built-in CI/CD capabilities. Komodo follows a Core/Periphery architecture
+where a central Core instance manages multiple Periphery agents running on your servers.
+
+Unlike simple container management tools, Komodo provides a complete workflow from code to deployment.
+It can monitor your Git repositories, build Docker images, push them to registries, and deploy
+containers across your infrastructure, all from a single dashboard.
+
+### Key Features
+
+Komodo offers a comprehensive set of features for homelab infrastructure management:
+
+- **Server Management**: Monitor and manage multiple servers from a single dashboard with real-time stats
+- **Stack Deployments**: Deploy Docker Compose stacks with version control
+- **Image Building**: Build Docker images from repositories with dedicated Builder instances
+- **Container Management**: Start, stop, restart, and monitor containers across all connected servers
+- **Git Integration**: Connect to repositories on GitHub, GitLab, Forgejo, or any Git provider
+- **Alerting System**: Get notified when containers crash, servers go offline, or builds fail
+- **Resource Monitoring**: Track CPU, memory, disk, and network usage across your infrastructure
+- **Procedure Automation**: Create automated workflows for common tasks
+
+### Architecture Overview
+
+Komodo uses a distributed architecture with three main components:
+
+- **Core**: The central management server that hosts the web UI and API
+- **Periphery**: Lightweight agents that run on each managed server
+- **Builder**: Optional dedicated instances for building Docker images
+
+This separation allows the Core to remain lightweight while offloading heavy tasks like image building to dedicated Builder instances.
+
+## Homelab Setup Overview
+
+For this installation, I'm using multiple Proxmox LXC containers:
+
+**Komodo Core**:
+- **Host**: Proxmox VE LXC Container
+- **OS**: Alpine Linux with Docker
+- **CPU**: 1 vCPU
+- **RAM**: 512 MB
+- **Storage**: 8 GB
+
+**Komodo Builder**:
+- **Host**: Proxmox VE LXC Container
+- **OS**: Alpine Linux with Docker
+- **CPU**: 2 vCPU
+- **RAM**: 2 GB
+- **Storage**: 16 GB
+
+**Target Server** (where containers will be deployed):
+- **Host**: Proxmox VE LXC Container
+- **OS**: Alpine Linux with Docker
+- **CPU**: 4 vCPU
+- **RAM**: 8 GB
+- **Storage**: 64 GB
+
+The Builder instance needs more resources since it will be compiling Docker images. The target server specifications will vary based on what you plan to run.
+
+## Installation
+
+We'll deploy Komodo in stages: first the Core, then the Periphery agents, and finally the Builder.
+
+### Prerequisites
+
+Before starting, ensure you have:
+
+- Docker and Docker Compose installed on all hosts
+- Network connectivity between all servers
+- A Forgejo instance (from the previous article) or another Git provider
+- A Docker registry (I'll use an instance I have locally in my homelab, but any provider will do)
+
+### Deploying Komodo Core
+
+Create a directory for your Komodo Core installation and download the official compose files:
+```bash
+mkdir -p ~/komodo
+cd ~/komodo
+
+# Download the official compose file and environment configuration
+wget https://raw.githubusercontent.com/moghtech/komodo/main/compose/mongo.compose.yaml
+wget https://raw.githubusercontent.com/moghtech/komodo/main/compose/compose.env
+```
+
+### Configuring the Environment
+
+Open the `compose.env` file and configure the required variables:
+```bash
+nano compose.env
+```
+
+Update the following values:
+```env showLineNumbers title="compose.env" /your-komodo-ip/#ob /your-secure-passkey/#ob /your-secure-webhook-secret/#ob /your-jwt-secret/#ob
+## Required
+KOMODO_HOST=http://your-komodo-ip:9120
+KOMODO_TITLE=Homelab Komodo
+
+## Secrets - generate with: openssl rand -base64 32
+KOMODO_PASSKEY=your-secure-passkey
+KOMODO_WEBHOOK_SECRET=your-secure-webhook-secret
+KOMODO_JWT_SECRET=your-jwt-secret
+
+## Auth
+KOMODO_LOCAL_AUTH=true
+
+## First Server - automatically registers local Periphery
+KOMODO_FIRST_SERVER=homelab-core
+```
+
+**Important**: Generate secure values for the secrets:
+```bash
+# Generate random secrets
+echo "KOMODO_PASSKEY: $(openssl rand -base64 32)"
+echo "KOMODO_WEBHOOK_SECRET: $(openssl rand -base64 32)"
+echo "KOMODO_JWT_SECRET: $(openssl rand -base64 32)"
+```
+
+Replace `your-komodo-ip` with the actual IP address or hostname of your Komodo Core server.
+
+### Understanding the Configuration
+
+The official compose file includes:
+
+**Core Service**:
+- Hosts the web interface on port 9120
+- Connects to MongoDB for data persistence
+- Mounts a repos directory for cloning Git repositories
+
+**MongoDB Service**:
+- Stores all Komodo configuration, deployment history, and state
+- Data persists in a Docker volume
+
+**Periphery Service**:
+- Runs alongside Core to manage containers on the same host
+- Mounts the Docker socket to control containers
+- Shares the repos directory with Core
+
+### Starting Komodo Core
+
+Start the services using the downloaded compose file:
+```bash
+docker compose -f mongo.compose.yaml --env-file compose.env up -d
+```
+
+Verify everything is running:
+```bash
+docker compose -f mongo.compose.yaml --env-file compose.env ps
+```
+
+You should see all three containers running:
+```bash
+NAME                IMAGE                                    STATUS          PORTS
+komodo-core         ghcr.io/moghtech/komodo-core:latest      Up 2 minutes    0.0.0.0:9120->9120/tcp
+komodo-mongo        mongo:8                                  Up 2 minutes    27017/tcp
+komodo-periphery    ghcr.io/moghtech/komodo-periphery:latest Up 2 minutes    8120/tcp
+```
+
+## Initial Configuration
+
+Access the Komodo web interface at `http://your-komodo-ip:9120`.
+
+### First Login
+
+![first login](/images/blogs/komodo-homelab/1.png)
+
+1. On first access, you'll see the login page
+2. Enter admin as username and changeme as password
+3. Log in with those credentials
+
+![komodo dashboard](/images/blogs/komodo-homelab/2.png)
+
+### Exploring the Dashboard
+
+After logging in, you'll see the main dashboard with:
+
+- **Servers**: List of connected Periphery agents
+- **Deployments**: Container stacks managed by Komodo
+- **Builds**: Docker image build configurations
+- **Repos**: Connected Git repositories
+- **Procedures**: Automated workflows
+- **Alerters**: Notification configurations
+
+The "homelab-core" server should already appear, registered automatically by the `KOMODO_FIRST_SERVER` environment variable.
+
+![server details](/images/blogs/komodo-homelab/3.png)
+
+## Adding Additional Servers
+
+To manage containers on other servers, you need to deploy Periphery agents on them.
+
+### Deploying Periphery on Target Servers
+
+On each server you want to manage, create a Periphery deployment:
+
+```bash
+mkdir -p ~/komodo-periphery
+cd ~/komodo-periphery
+
+# Download the official compose file and environment configuration
+wget https://raw.githubusercontent.com/moghtech/komodo/refs/heads/main/compose/periphery.compose.yaml
+```
+
+**Important**: Use the same `PERIPHERY_PASSKEY` as your Core installation, and uncomment ports in docker compose
+in order to allow core to reach periphery.
+
+Start the Periphery:
+```bash
+docker compose -f periphery.compose.yaml up -d
+```
+
+### Registering Servers in Komodo
+
+![add server](/images/blogs/komodo-homelab/4.png)
+
+1. In Komodo, navigate to **Servers**
+2. Click the **+** button to add a new server
+3. Enter the server details:
+   - **Name**: A descriptive name (e.g., "homelab-main")
+   - **Enabled**: True
+   - **Address**: `https://server-ip:8120`
+4. Click **Save**
+
+The server should connect and show as online with its container and resource information.
+
+![server list](/images/blogs/komodo-homelab/5.png)
+
+## Setting Up Komodo Builder
+
+The Builder is a specialized Periphery instance optimized for building Docker images. Running builds on a dedicated instance keeps your production servers responsive.
+
+### Deploying the Builder
+
+On your Builder server, create the deployment (same as periphery):
+```bash
+mkdir -p ~/komodo-builder
+cd ~/komodo-builder
+
+# Download the official compose file and environment configuration
+wget https://raw.githubusercontent.com/moghtech/komodo/refs/heads/main/compose/periphery.compose.yaml
+```
+
+Start the Builder:
+```bash
+docker compose -f periphery.compose.yaml up -d
+```
+
+### Registering the Builder
+
+Add the Builder as a server in Komodo:
+
+1. Navigate to **Servers**
+2. Click **+** to add a new server
+3. Enter:
+   - **Name**: "homelab-builder"
+   - **Enabled**: True
+   - **Address**: `http://builder-ip:8120`
+4. Click **Save**
+
+After that go into Settings -> Builders tab
+
+1. Click **New Builder**
+2. Enter:
+    - **Name**: "homelab-builder"
+    - **Type**: "Server"
+    - Click **Create**
+3. In the new opened page select the server created before: "homelab-builder"
+4. Click **Save**
+
+![builders list](/images/blogs/komodo-homelab/6.png)
+
+## Connecting to Forgejo
+
+Now let's integrate Komodo with the Forgejo instance from the previous article. This allows Komodo to pull stacks from your Git repositories and trigger deployments on push.
+
+### Creating a Forgejo Access Token
+
+In Forgejo:
+
+1. Navigate to **Settings** → **Applications**
+2. Under **Generate New Token**, enter:
+   - **Token Name**: "Komodo"
+   - **Repository Access**: Preferred (we will use All)
+   - **Permissions**: Select `repository` (Read and Write)
+3. Click **Generate Token**
+4. Copy the generated token immediately (you won't see it again)
+
+![generate token](/images/blogs/komodo-homelab/7.png)
+
+![generated token](/images/blogs/komodo-homelab/8.png)
+
+### Adding Git Provider in Komodo
+
+1. In Komodo, navigate to **Settings** → **Git Providers**
+2. Under **Git Accounts** click **New Account**
+3. Configure:
+   - **Domain**: `your-forgejo-ip:3000`
+   - **HTTPS**: Disable if not using SSL
+   - **Username**: Account that has generated token
+   - **Token**: Paste your Forgejo access token
+4. Click **Create**
+
+![git provider](/images/blogs/komodo-homelab/9.png)
+
+### Setting Up the Homelab Stacks Repository
+
+In Forgejo, create a repository called `homelab` to store all your Docker Compose configurations:
+
+<directory-tree 
+	title="homelab" 
+	structure="
+		//
+			README.md
+			uptime-kuma/
+				compose.yaml
+			homepage/
+				compose.yaml
+				config/
+					settings.yaml
+					bookmarks.yaml
+			vaultwarden/
+				compose.yaml
+				.env
+	">
+</directory-tree>
+
+Each stack is a directory containing a `compose.yaml` file and any related configurations.
+
+Example stack structure for Uptime Kuma:
+```yml showLineNumbers title="uptime-kuma/compose.yaml"
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: uptime-kuma
+    restart: unless-stopped
+    ports:
+      - 3001:3001
+    volumes:
+      - ./data:/app/data
+```
+
+## Creating Your First Stack Deployment
+
+With everything connected, let's deploy a stack from your Forgejo repository.
+
+### Syncing the Repository
+
+![repo sync](/images/blogs/komodo-homelab/10.png)
+
+1. Navigate to **Repos** in Komodo
+2. Click **+** to add a repository
+3. Configure:
+   - **Name**: "homelab-stacks"
+   - **Server**: "homelab-main"
+   - **Source**: Select your Forgejo provider
+   - **Account**: The one created
+   - **Repo**: Select or enter `your-username/homelab-stacks`
+   - **Branch**: `main`
+4. Click **Save**
+5. Click **Clone**
+
+Komodo will clone the repository. You can view the sync status and trigger manual syncs from the repository page.
+
+### Creating a Stack Deployment
+
+1. Navigate to **Stacks**
+2. Click **+** to create a new stack
+3. Configure:
+   - **Name**: "uptime-kuma"
+   - **Server**: Select your target server (e.g., "homelab-main")
+   - **Choose Mode**: Select "Git Repo"
+   - **Repo**: Select "homelab-stacks"
+   - **Files**: `uptime-kuma` (the directory within the repo)
+4. Click **Save**
+
+If all goes well you will see into the **Info** tab, the content of the compose.yaml
+
+![stack created](/images/blogs/komodo-homelab/11.png)
+
+### Deploying the Stack
+
+1. On the stack page, review the compose file preview
+2. Click **Deploy**
+3. Komodo will pull the images and start the containers
+4. Monitor the deployment logs in real-time
+
+Now if all goes in the right way, if you visit the address of <homelab-main server>:3001, you will see
+the uptime kuma create profile page.
+
+![uptime kuma deployed](/images/blogs/komodo-homelab/12.png)
+
+Once complete, you can see the running containers under the server's container list or in the stack's detail page.
+
+## Setting Up Webhooks for Auto-Deployment
+
+To automatically deploy when you push changes to your stacks repository, configure webhooks.
+
+### Creating a Webhook in Forgejo
+
+Komodo repo webhook settings
+
+![komodo repo webhook](/images/blogs/komodo-homelab/13.png)
+
+1. In Forgejo, navigate to your `homelab-stacks` repository
+2. Go to **Settings** → **Webhooks**
+3. Click **Add Webhook** → **Forgejo**
+4. Configure:
+   - **Target URL** for pull (you can get this on Komodo inside the repo config): `https://10.10.30.80:9120/listener/github/repo/695136087e900e1e4705b121/pull`
+   - **HTTP Method**: POST
+   - **Secret**: Your `KOMODO_WEBHOOK_SECRET` value
+   - **Trigger On**: Push Events
+5. Click **Add Webhook**
+
+![forgejo webhook config](/images/blogs/komodo-homelab/14.png)
+
+If you get an https error, just change into the target url https to http. Now if you test the webhook or do a push on the repository you will receive on komodo
+a notification like this, that tell you komodo did a pull repo via git webhook:
+
+![git webhook notification](/images/blogs/komodo-homelab/15.png)
+
+## Building Custom Images
+
+One of Komodo's powerful features is building Docker images from your repositories. This integrates perfectly with Forgejo.
+
+### Creating a Build Configuration
+
+1. Navigate to **Builds** in Komodo
+2. Click **+** to create a new build
+3. Configure:
+   - **Name**: "my-app"
+   - **Builder Server**: Select "homelab-builder"
+   - **Source**: Select your Git provider and repository
+   - **Dockerfile Path**: `Dockerfile` (or custom path)
+   - **Build Context**: `.` (repository root)
+
+### Configuring Image Registry
+
+To push built images to Forgejo's container registry:
+
+1. In the build configuration, scroll to **Image Registry**
+2. Configure:
+   - **Registry**: `your-forgejo-ip:3000`
+   - **Image Name**: `your-username/my-app`
+   - **Account**: Your Forgejo username
+   - **Token**: Your Forgejo access token
+
+### Running a Build
+
+1. Click **Build** on the build page
+2. Watch the build logs in real-time
+3. Once complete, the image will be pushed to your Forgejo registry
+
+### Using Built Images in Stacks
+
+Reference your custom images in stack compose files:
+```yml showLineNumbers title="my-app/compose.yaml"
+services:
+  my-app:
+    image: your-forgejo-ip:3000/your-username/my-app:latest
+    container_name: my-app
+    restart: unless-stopped
+    ports:
+      - 8080:8080
+```
+
+## Creating Procedures for Automation
+
+Procedures in Komodo allow you to chain multiple actions together, perfect for CI/CD workflows.
+
+### Example: Build and Deploy Pipeline
+
+1. Navigate to **Procedures**
+2. Click **+** to create a new procedure
+3. Configure:
+   - **Name**: "deploy-my-app"
+   - **Steps**:
+     1. **Build**: Select your "my-app" build
+     2. **Deploy**: Select your "my-app" stack
+
+This procedure will build a fresh image and then deploy it, ensuring your stack always runs the latest code.
+
+### Triggering Procedures via Webhook
+
+You can trigger procedures from Forgejo pushes:
+
+1. Copy the procedure's webhook URL from its settings
+2. Add a new webhook in Forgejo pointing to this URL
+3. Now pushes to your app repository will trigger the full build and deploy pipeline
+
+## Monitoring and Alerting
+
+Komodo provides built-in monitoring for all your managed resources.
+
+### Resource Monitoring
+
+Each server page displays real-time and historical data for:
+
+- CPU usage
+- Memory usage
+- Disk usage
+- Network I/O
+- Container status
+
+### Setting Up Alerts
+
+1. Navigate to **Alerters**
+2. Click **+** to create an alerter
+3. Configure your notification method:
+   - **Discord**: Webhook URL
+   - **Slack**: Webhook URL
+   - **Custom**: HTTP endpoint for custom integrations
+
+4. Configure what triggers alerts:
+   - Server offline
+   - Container crashed
+   - Build failed
+   - Deployment failed
+
+## Troubleshooting
+
+### Common Issues
+
+**Periphery not connecting to Core**:
+- Verify the passkey matches exactly between Core and Periphery
+- Check network connectivity: `curl http://core-ip:9120`
+- Review Periphery logs: `docker compose logs periphery`
+
+**Builds failing**:
+- Check Builder has sufficient resources (disk space, memory)
+- Verify Docker socket is properly mounted
+- Check Builder logs for specific errors
+
+**Stacks not deploying**:
+- Ensure the target server's Periphery is connected
+- Verify the compose file is valid YAML
+- Check server disk space and available resources
+
+**Repository sync failing**:
+- Verify Git provider token is valid
+- Check the repository URL and permissions
+- Review Core logs for authentication errors
+
+**Webhooks not triggering**:
+- Verify webhook secret matches `KOMODO_WEBHOOK_SECRET`
+- Check Forgejo's webhook delivery logs for errors
+- Ensure Komodo Core is accessible from Forgejo
+
+## Conclusion
+
+You now have a complete container management and CI/CD platform running in your homelab. With Komodo integrated with Forgejo, you have:
+
+- Centralized management of all your Docker containers
+- Automated deployments triggered by Git pushes
+- Custom image building with dedicated Builder instances
+- Real-time monitoring and alerting
+- Version-controlled infrastructure with your homelab-stacks repository
+
+This setup gives you the power of enterprise DevOps tools while keeping everything self-hosted and under your control. The combination of Forgejo for code hosting and Komodo for deployment creates a seamless workflow from commit to running container.
+
+Happy deploying!
